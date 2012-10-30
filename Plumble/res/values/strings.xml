@@ -48,5 +48,6 @@
     <string name="disconnected">Disconnected</string>
     <string name="kickedMessage">Kicked from server. Reason: %s</string>
     <string name="loading">Loading...</string>
+    <string name="reset_key">Reset Key</string>
 
 </resources>
