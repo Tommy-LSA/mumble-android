@@ -17,7 +17,7 @@
     <string name="sendText">Send</string>
     <string name="app_name">Plumble</string>
     <string name="server_deleted">Server deleted</string>
-    <string name="chat_message">Chat message</string>
+    <string name="chat_message">Chat</string>
     <string name="chatReceiverLabel">Receiver</string>
     <string name="chatReceiverPrompt">Select the receiver</string>
     <string name="connectionProgressTitle">Establishing Connection</string>

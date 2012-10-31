@@ -136,10 +136,6 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
         	sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         	proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         }
-		
-        // Create the adapter that will return a fragment for each of the three primary sections
-        // of the app.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         // Set up the action bar.
         final ActionBar actionBar = getSupportActionBar();
@@ -169,7 +165,20 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 				this.visibleChannel = channel;
 			}
 			
-			if(savedInstanceState.containsKey(ChannelListFragment.class.getName()) &&
+        }
+        
+        mViewPager = (ViewPager) findViewById(R.id.pager);
+        
+        // If view pager is present, configure phone UI.
+        if(mViewPager != null) {
+            // Create the adapter that will return a fragment for each of the three primary sections
+            // of the app.
+            mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+            // Set up the ViewPager with the sections adapter.
+            mViewPager.setAdapter(mSectionsPagerAdapter);
+        	
+            if(savedInstanceState != null &&
+            		savedInstanceState.containsKey(ChannelListFragment.class.getName()) &&
 					savedInstanceState.containsKey(ChannelChatFragment.class.getName())) {
 				// Load existing fragments
 				listFragment = (ChannelListFragment) getSupportFragmentManager().getFragment(savedInstanceState, ChannelListFragment.class.getName());
@@ -179,16 +188,11 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 		        listFragment = new ChannelListFragment();
 		        chatFragment = new ChannelChatFragment();
 			}
-			
         } else {
-	        // Create fragments
-	        listFragment = new ChannelListFragment();
-	        chatFragment = new ChannelChatFragment();
-		}
-        
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.pager);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
+        	// Otherwise, create tablet UI.
+	        listFragment = (ChannelListFragment) getSupportFragmentManager().findFragmentById(R.id.list_fragment);
+	        chatFragment = (ChannelChatFragment) getSupportFragmentManager().findFragmentById(R.id.chat_fragment);
+        }
 
         /*
          * Removed tab code as you are unable to have both tabs and list navigation modes. Use pager only for now.
