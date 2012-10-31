@@ -115,14 +115,11 @@ public class ServerList extends ConnectedListActivity {
 	private static final int ACTIVITY_CHANNEL_LIST = 1;
 	private static final int DIALOG_DELETE_SERVER = 0;
 
-	private static final int MENU_ADD_SERVER = Menu.FIRST;
-	private static final int MENU_EDIT_SERVER = Menu.FIRST + 1;
-	private static final int MENU_DELETE_SERVER = Menu.FIRST + 2;
-	private static final int MENU_EXIT = Menu.FIRST + 3;
-	private static final int MENU_CONNECT_SERVER = Menu.FIRST + 4;
-	private static final int MENU_PREFERENCES = Menu.FIRST + 5;
+	private static final int MENU_EDIT_SERVER = Menu.FIRST;
+	private static final int MENU_DELETE_SERVER = Menu.FIRST + 1;
+	private static final int MENU_CONNECT_SERVER = Menu.FIRST + 2;
 
-	private static final String STATE_WAIT_CONNECTION = "org.pcgod.mumbleclient.ServerList.WAIT_CONNECTION";
+	private static final String STATE_WAIT_CONNECTION = "com.morlunk.mumbleclient.ServerList.WAIT_CONNECTION";
 
 	private ServerServiceObserver mServiceObserver;
 	

@@ -3,6 +3,7 @@ package com.morlunk.mumbleclient.app;
 import java.util.List;
 
 import net.sf.mumble.MumbleProto.PermissionDenied.DenyType;
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -15,6 +16,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.media.AudioManager;
 import android.os.AsyncTask;
+import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.support.v4.app.FragmentManager;
@@ -746,7 +748,11 @@ class ChannelSpinnerAdapter implements SpinnerAdapter {
 			}
 			
 			TextView spinnerTitle = (TextView) view.findViewById(R.id.channel_name);
-			spinnerTitle.setText(channel.name+" ("+channel.userCount+")");
+			spinnerTitle.setText(channel.name);
+			
+			TextView spinnerCount = (TextView) view.findViewById(R.id.channel_count);
+			spinnerCount.setText("("+channel.userCount+")");
+			spinnerCount.setTextColor(getResources().getColor(channel.userCount > 0 ? R.color.abs__holo_blue_light : R.color.abs__primary_text_holo_dark));
 			
 			return view;
 		}
