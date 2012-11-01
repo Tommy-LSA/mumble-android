@@ -49,5 +49,6 @@
     <string name="kickedMessage">Kicked from server. Reason: %s</string>
     <string name="loading">Loading...</string>
     <string name="reset_key">Reset Key</string>
+    <string name="externalStorageUnavailable">External storage unavailable, cannot load certificate</string>
 
 </resources>
