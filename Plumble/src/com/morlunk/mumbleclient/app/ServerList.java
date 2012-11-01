@@ -180,9 +180,7 @@ public class ServerList extends ConnectedListActivity {
 	}
 	
 	@Override
-	public final boolean onMenuItemSelected(
-		final int featureId,
-		final MenuItem item) {
+	public boolean onMenuItemSelected(int featureId, MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.menu_add_server_item:
 			addServer();
@@ -195,6 +193,7 @@ public class ServerList extends ConnectedListActivity {
 			return super.onMenuItemSelected(featureId, item);
 		}
 	}
+	
 
 	private void addServer() {
 		final Intent i = new Intent(this, ServerInfo.class);

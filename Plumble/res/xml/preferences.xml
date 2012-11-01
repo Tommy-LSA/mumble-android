@@ -57,10 +57,8 @@
             android:key="channellistrowheight"
             android:summary="@string/rowheightSum"
             android:title="@string/rowheight" />
-        <ListPreference
+        <CheckBoxPreference
             android:defaultValue="false"
-            android:entries="@array/colorizeText"
-            android:entryValues="@array/colorizeValues"
             android:key="colorizechannellist"
             android:summary="@string/colorizechannelsSum"
             android:title="@string/colorizechannels" />

@@ -38,10 +38,10 @@ public class Settings {
 	public static final String LAST_CHANNEL_PREFIX = "lastChannel_"; // TODO move this to db code or something. It's messy as hell.
 
 	public static final String PREF_CHANNELLIST_ROW_HEIGHT = "channellistrowheight";
-	public static final String DEFAULT_CHANNELLIST_ROW_HEIGHT = "30";
+	public static final String DEFAULT_CHANNELLIST_ROW_HEIGHT = "35";
 
 	public static final String PREF_COLORIZE_CHANNELLIST = "colorizechannellist";
-	public static final String DEFAULT_COLORIZE_CHANNELLIST = "false";
+	public static final Boolean DEFAULT_COLORIZE_CHANNELLIST = false;
 
 	public static final String PREF_COLORIZE_THRESHOLD = "colorthresholdnumusers";
 	public static final String DEFAULT_COLORIZE_THRESHOLD = "5";
@@ -106,13 +106,13 @@ public class Settings {
 
 	public int getChannelListRowHeight() {
 		return Integer.parseInt(preferences.getString(
-				Settings.PREF_CHANNELLIST_ROW_HEIGHT,
+				PREF_CHANNELLIST_ROW_HEIGHT,
 				DEFAULT_CHANNELLIST_ROW_HEIGHT));
 	}
 
 	public Boolean getChannellistColorized() {
-		return preferences.getString(Settings.PREF_COLORIZE_CHANNELLIST,
-				DEFAULT_COLORIZE_CHANNELLIST).equals("true");
+		return preferences.getBoolean(Settings.PREF_COLORIZE_CHANNELLIST,
+				DEFAULT_COLORIZE_CHANNELLIST);
 	}
 
 	public int getColorizeThreshold() {
