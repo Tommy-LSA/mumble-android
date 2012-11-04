@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.database.Cursor;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -332,7 +333,13 @@ public class ServerList extends ConnectedListActivity {
 	protected final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		Crittercism.init(getApplicationContext(), "50650bc62cd95250d3000004");
+		boolean debuggable =  ( 0 != ( getApplicationInfo().flags &= ApplicationInfo.FLAG_DEBUGGABLE ) );
+		
+		if(!debuggable) {
+			Crittercism.init(getApplicationContext(), "50650bc62cd95250d3000004");
+		} else {
+			Log.i(Globals.LOG_TAG, "Crittercism disabled in debug build.");
+		}
 		
 		setContentView(R.layout.main);
 		
