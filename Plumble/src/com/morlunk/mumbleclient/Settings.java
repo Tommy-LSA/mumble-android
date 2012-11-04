@@ -46,6 +46,9 @@ public class Settings {
 	public static final String PREF_COLORIZE_THRESHOLD = "colorthresholdnumusers";
 	public static final String DEFAULT_COLORIZE_THRESHOLD = "5";
 
+	public static final String PREF_FORCE_TCP = "forceTcp";
+	public static final Boolean DEFAULT_FORCE_TCP = false;
+	
 	private final SharedPreferences preferences;
 
 	public Settings(final Context ctx) {
@@ -118,5 +121,9 @@ public class Settings {
 	public int getColorizeThreshold() {
 		return Integer.parseInt(preferences.getString(
 				Settings.PREF_COLORIZE_THRESHOLD, DEFAULT_COLORIZE_THRESHOLD));
+	}
+	
+	public boolean isTcpForced() {
+		return preferences.getBoolean(PREF_FORCE_TCP, false);
 	}
 }

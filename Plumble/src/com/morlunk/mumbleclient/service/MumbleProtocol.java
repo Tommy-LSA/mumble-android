@@ -151,9 +151,12 @@ public class MumbleProtocol {
 			currentUser = findUser(ss.getSession());
 			currentUser.isCurrent = true;
 			currentChannel = currentUser.getChannel();
-
-			pingThread = new Thread(new PingThread(conn), "Ping");
-			pingThread.start();
+			
+			if(!conn.forceTcp) {
+				pingThread = new Thread(new PingThread(conn), "Ping");
+				pingThread.start();
+			}
+			
 			Log.d(Globals.LOG_TAG, ">>> " + t);
 
 			ao = new AudioOutput(ctx, audioHost);
