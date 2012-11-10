@@ -53,10 +53,11 @@
     <string name="audioQualitySum">The audio bit rate at which Plumble will operate at.</string>
     <string name="forceTcp">Force TCP</string>
     <string name="forceTcpSum">Whether to force TCP (disable UDP) communications.</string>
-    <string name="favorite">Favorite</string>
-    <string name="viewFavorites">View Favorites</string>
+    <string name="addFavorite">Add Favorite</string>
+    <string name="removeFavorite">Remove Favorite</string><string name="viewFavorites">View Favorites</string>
     <string name="favorites">Favorites</string>
-    <string name="favouriteRemoved">Favourite removed.</string>
-    <string name="favouriteAdded">Favourite added.</string>
+    <string name="favoriteRemoved">Favorite removed.</string>
+    <string name="favoriteAdded">Favorite added.</string>
+    
 
 </resources>

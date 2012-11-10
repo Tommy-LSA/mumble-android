@@ -484,10 +484,10 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 		
 		if(currentFavourite == null) {
 			dbAdapter.createFavourite(mService.getServerId(), channel.id);
-			Toast.makeText(this, R.string.favouriteAdded, Toast.LENGTH_SHORT).show();
+			Toast.makeText(this, R.string.favoriteAdded, Toast.LENGTH_SHORT).show();
 		} else {
 			dbAdapter.deleteFavourite(currentFavourite.getId());
-			Toast.makeText(this, R.string.favouriteRemoved, Toast.LENGTH_SHORT).show();
+			Toast.makeText(this, R.string.favoriteRemoved, Toast.LENGTH_SHORT).show();
 		}
 		
 		dbAdapter.close();

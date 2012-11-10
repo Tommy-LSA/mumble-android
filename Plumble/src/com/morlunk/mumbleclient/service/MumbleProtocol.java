@@ -301,14 +301,16 @@ public class MumbleProtocol {
 		case UserRemove:
 			final UserRemove ur = UserRemove.parseFrom(buffer);
 			user = findUser(ur.getSession());
-						
-			users.remove(user.session);
+			
+			if(user != null) {
+				users.remove(user.session);
+				
+				// Remove the user from the channel as well.
+				user.getChannel().userCount--;
 
-			// Remove the user from the channel as well.
-			user.getChannel().userCount--;
-
-			host.channelUpdated(user.getChannel());
-			host.userRemoved(user.session, ur.getReason());
+				host.channelUpdated(user.getChannel());
+				host.userRemoved(user.session, ur.getReason());
+			}
 			break;
 		case TextMessage:
 			handleTextMessage(TextMessage.parseFrom(buffer));
