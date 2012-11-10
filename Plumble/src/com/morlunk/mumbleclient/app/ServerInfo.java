@@ -67,7 +67,7 @@ public class ServerInfo extends SherlockActivity {
 			Server server = db.fetchServer(serverId);
 			nameEdit.setText(server.getName());
 			hostEdit.setText(server.getHost());
-			portEdit.setText(server.getPort());
+			portEdit.setText(String.valueOf(server.getPort()));
 			usernameEdit.setText(server.getUsername());
 			passwordEdit.setText(server.getPassword());
 			

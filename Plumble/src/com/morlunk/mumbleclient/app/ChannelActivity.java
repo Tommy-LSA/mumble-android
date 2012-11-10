@@ -85,6 +85,10 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
      */
     ViewPager mViewPager;
 
+    // Favourites
+    private List<Favourite> favourites;
+    private MenuItem favouritesItem;
+    
 	private Channel visibleChannel;
 	private ChannelSpinnerAdapter channelAdapter;
 
@@ -128,7 +132,7 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_channel);
-		
+        
         // Handle differences in CallMode
         
         PlumbleCallMode callMode = settings.getCallMode();
@@ -257,9 +261,32 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getSupportMenuInflater().inflate(R.menu.activity_channel, menu);
-                
+        getSupportMenuInflater().inflate(R.menu.activity_channel, menu);      
+        
+        favouritesItem = menu.findItem(R.id.menu_favorite_button);
+        
         return true;
+    }
+    
+    /**
+     * Updates the icon and title of the 'favourites' menu icon to represent the channel's favourited status.
+     */
+    public void updateFavouriteMenuItem() {
+    	if(favouritesItem == null)
+    		return;
+    	
+    	int currentChannel = getChannel().id;
+    	
+    	boolean isFavouriteChannel = false;
+    	for(Favourite favourite : favourites) {
+    		if(favourite.getChannelId() == currentChannel) {
+    			isFavouriteChannel = true;
+    			break;
+    		}
+    	}
+    	
+    	favouritesItem.setTitle(isFavouriteChannel ? R.string.removeFavorite : R.string.addFavorite);
+    	favouritesItem.setIcon(isFavouriteChannel ? R.drawable.ic_action_favorite_on : R.drawable.ic_action_favorite_off);
     }
     
     /* (non-Javadoc)
@@ -358,6 +385,9 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 			mProgressDialog = null;
 		}
 		
+        // Load favourites
+        favourites = loadFavourites();
+        
 		List<Channel> channelList = mService.getSortedChannelList();
 		channelAdapter = new ChannelSpinnerAdapter(channelList);
 		getSupportActionBar().setListNavigationCallbacks(channelAdapter, new OnNavigationListener() {
@@ -476,7 +506,7 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 		
 		Favourite currentFavourite = null;
 		
-		for(Favourite favourite : dbAdapter.fetchAllFavourites()) {
+		for(Favourite favourite : favourites) {
 			if(favourite.getChannelId() == channel.id) {
 				currentFavourite = favourite;
 			}
@@ -491,16 +521,21 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 		}
 		
 		dbAdapter.close();
+		
+		favourites = loadFavourites();
+		updateFavouriteMenuItem();
+	}
+	
+	public List<Favourite> loadFavourites() {
+        DbAdapter dbAdapter = new DbAdapter(this);
+        dbAdapter.open();
+        List<Favourite> favouriteResult = dbAdapter.fetchAllFavourites(mService.getServerId());
+        dbAdapter.close();
+        return favouriteResult;
 	}
 	
 	private void showFavouritesDialog() {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		
-		DbAdapter dbAdapter = new DbAdapter(this);
-		
-		dbAdapter.open();
-		List<Favourite> favourites = dbAdapter.fetchAllFavourites();
-		dbAdapter.close();
 		
 		List<CharSequence> items = new ArrayList<CharSequence>();
 		final List<Favourite> activeFavourites = new ArrayList<Favourite>(favourites);
@@ -549,6 +584,9 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 	public void setChannel(Channel channel) {
 		this.visibleChannel = channel;
 		listFragment.updateChannel();
+        
+        // Update favourites icon
+		updateFavouriteMenuItem();
 	}
 	
 	/* (non-Javadoc)

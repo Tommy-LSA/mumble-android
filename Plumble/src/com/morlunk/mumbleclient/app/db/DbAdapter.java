@@ -42,12 +42,13 @@ public class DbAdapter {
 			   +"`"+FAVOURITES_SERVER+"` INTEGER NOT NULL"
 			   +");";
 	
-	public static final Integer DATABASE_VERSION = 3;
+	public static final Integer PRE_FAVOURITES_DB_VERSION = 2;
+	public static final Integer CURRENT_DB_VERSION = 3;
 	
 	private static class DatabaseHelper extends SQLiteOpenHelper {
 		
 		public DatabaseHelper(final Context context) {
-			super(context, DATABASE_NAME, null, DATABASE_VERSION);
+			super(context, DATABASE_NAME, null, CURRENT_DB_VERSION);
 		}
 
 		@Override
@@ -63,13 +64,16 @@ public class DbAdapter {
 			final int newVersion) {
 			Log.w(Globals.LOG_TAG, "Database upgrade from " + oldVersion +
 								  " to " + newVersion);
-			if (oldVersion == 1) {
+			if (oldVersion == PRE_FAVOURITES_DB_VERSION) {
+				db.execSQL(TABLE_FAVOURITES_CREATE_SQL);
+				/*
 				db.execSQL("ALTER TABLE `"+TABLE_SERVER+"` RENAME TO `"+TABLE_SERVER+"_old`");
 				onCreate(db);
 				db.execSQL("INSERT INTO `"+TABLE_SERVER+"` SELECT "
 						   + "`"+SERVER_ID+"`, '', `"+SERVER_HOST+"`, `"+SERVER_PORT+"`, `"+SERVER_USERNAME+"`, `"+SERVER_PASSWORD+"` "
 						   + "FROM `server_old`");
 				db.execSQL("DROP TABLE `"+TABLE_SERVER+"_old`");
+				*/
 			}
 		}
 	}
@@ -213,13 +217,13 @@ public class DbAdapter {
 		return favourites;
 	}
 	
-	public List<Favourite> fetchAllFavourites() {
+	public List<Favourite> fetchAllFavourites(int serverId) {
 
 		final Cursor c = db.query(
 			TABLE_FAVOURITES,
 			new String[] { FAVOURITES_ID, FAVOURITES_CHANNEL, FAVOURITES_SERVER},
-			null,
-			null,
+			FAVOURITES_SERVER + "=?",
+			new String[] { String.valueOf(serverId) },
 			null,
 			null,
 			null);
