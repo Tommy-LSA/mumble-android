@@ -58,6 +58,8 @@
     <string name="favorites">Favorites</string>
     <string name="favoriteRemoved">Favorite removed.</string>
     <string name="favoriteAdded">Favorite added.</string>
+    <string name="noFavorites">No favorited channels.</string>
+    <string name="accessTokens">Access Tokens</string>
     
 
 </resources>

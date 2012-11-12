@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <ListView
+        android:id="@+id/tokenList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+    </ListView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" 
+    	android:divider="?android:attr/dividerVertical"
+    	android:showDividers="middle" >
+
+        <EditText
+            android:id="@+id/tokenField"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:imeOptions="actionSend|flagNoEnterAction"
+            android:lines="1" >
+        </EditText>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:divider="?android:attr/dividerHorizontal"
+            android:orientation="horizontal"
+            android:showDividers="middle" >
+
+            <!-- TODO fix pre-ICS style incompatibilities -->
+
+            <Button
+                android:id="@+id/tokenCloseButton"
+                style="@android:style/Widget.Holo.Light.Button.Borderless.Small"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@android:string/cancel" />
+
+            <Button
+                android:id="@+id/tokenAddButton"
+                style="@android:style/Widget.Holo.Light.Button.Borderless.Small"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/add" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

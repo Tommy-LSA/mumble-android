@@ -308,6 +308,10 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 		case R.id.menu_view_favorites_button:
 			showFavouritesDialog();
 			return true;
+		case R.id.menu_access_tokens_button:
+			TokenDialogFragment dialogFragment = TokenDialogFragment.newInstance();
+			dialogFragment.show(getSupportFragmentManager(), "tokens");
+			return true;
 		case R.id.menu_disconnect_item:
 			new Thread(new Runnable() {
 				
@@ -537,6 +541,8 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 	private void showFavouritesDialog() {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		
+		builder.setTitle(R.string.favorites);
+		
 		List<CharSequence> items = new ArrayList<CharSequence>();
 		final List<Favourite> activeFavourites = new ArrayList<Favourite>(favourites);
 		
@@ -552,32 +558,37 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 			}
 		}
 		
-		builder.setTitle(R.string.favorites);
-		builder.setItems(items.toArray(new CharSequence[items.size()]), new OnClickListener() {
-			
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				Favourite favourite = activeFavourites.get(which);
-				final Channel channel = findChannelById(favourite.getChannelId());
+		if(items.size() > 0) {
+			builder.setItems(items.toArray(new CharSequence[items.size()]), new OnClickListener() {
 				
-				new AsyncTask<Channel, Void, Void>() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					Favourite favourite = activeFavourites.get(which);
+					final Channel channel = findChannelById(favourite.getChannelId());
 					
-					@Override
-					protected Void doInBackground(Channel... params) {
-						mService.joinChannel(params[0].id);
-						return null;
-					}
-					
-					@Override
-					protected void onPostExecute(Void result) {
-						super.onPostExecute(result);
-						setChannel(channel);
-						getSupportActionBar().setSelectedNavigationItem(mService.getSortedChannelList().indexOf(channel));
-					}
-				}.execute(channel);
-			}
-		});
-				
+					new AsyncTask<Channel, Void, Void>() {
+						
+						@Override
+						protected Void doInBackground(Channel... params) {
+							mService.joinChannel(params[0].id);
+							return null;
+						}
+						
+						@Override
+						protected void onPostExecute(Void result) {
+							super.onPostExecute(result);
+							setChannel(channel);
+							getSupportActionBar().setSelectedNavigationItem(mService.getSortedChannelList().indexOf(channel));
+						}
+					}.execute(channel);
+				}
+			});
+		} else {
+			builder.setMessage(R.string.noFavorites);
+		}
+		
+		builder.setNegativeButton(android.R.string.cancel, null);
+		
 		builder.show();
 	}
 	

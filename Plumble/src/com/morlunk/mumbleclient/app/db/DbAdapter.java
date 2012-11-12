@@ -3,14 +3,14 @@ package com.morlunk.mumbleclient.app.db;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.morlunk.mumbleclient.Globals;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+
+import com.morlunk.mumbleclient.Globals;
 
 public class DbAdapter {
 
@@ -42,8 +42,19 @@ public class DbAdapter {
 			   +"`"+FAVOURITES_SERVER+"` INTEGER NOT NULL"
 			   +");";
 	
+	public static final String TABLE_TOKENS = "tokens";
+	public static final String TOKENS_ID = "_id";
+	public static final String TOKENS_VALUE = "value";
+	public static final String TOKENS_SERVER = "server";
+	public static final String TABLE_TOKENS_CREATE_SQL = "CREATE TABLE `"+TABLE_TOKENS+"` ("
+			   +"`"+TOKENS_ID+"` INTEGER PRIMARY KEY AUTOINCREMENT,"
+			   +"`"+TOKENS_VALUE+"` TEXT NOT NULL,"
+			   +"`"+TOKENS_SERVER+"` INTEGER NOT NULL"
+			   +");";
+	
 	public static final Integer PRE_FAVOURITES_DB_VERSION = 2;
-	public static final Integer CURRENT_DB_VERSION = 3;
+	public static final Integer PRE_TOKENS_DB_VERSION = 3;
+	public static final Integer CURRENT_DB_VERSION = 4;
 	
 	private static class DatabaseHelper extends SQLiteOpenHelper {
 		
@@ -55,6 +66,7 @@ public class DbAdapter {
 		public void onCreate(final SQLiteDatabase db) {
 			db.execSQL(TABLE_SERVER_CREATE_SQL);
 			db.execSQL(TABLE_FAVOURITES_CREATE_SQL);
+			db.execSQL(TABLE_TOKENS_CREATE_SQL);
 		}
 
 		@Override
@@ -64,16 +76,12 @@ public class DbAdapter {
 			final int newVersion) {
 			Log.w(Globals.LOG_TAG, "Database upgrade from " + oldVersion +
 								  " to " + newVersion);
-			if (oldVersion == PRE_FAVOURITES_DB_VERSION) {
+			if(oldVersion <= PRE_FAVOURITES_DB_VERSION) {
 				db.execSQL(TABLE_FAVOURITES_CREATE_SQL);
-				/*
-				db.execSQL("ALTER TABLE `"+TABLE_SERVER+"` RENAME TO `"+TABLE_SERVER+"_old`");
-				onCreate(db);
-				db.execSQL("INSERT INTO `"+TABLE_SERVER+"` SELECT "
-						   + "`"+SERVER_ID+"`, '', `"+SERVER_HOST+"`, `"+SERVER_PORT+"`, `"+SERVER_USERNAME+"`, `"+SERVER_PASSWORD+"` "
-						   + "FROM `server_old`");
-				db.execSQL("DROP TABLE `"+TABLE_SERVER+"_old`");
-				*/
+			}
+			
+			if(oldVersion <= PRE_TOKENS_DB_VERSION) {
+				db.execSQL(TABLE_TOKENS_CREATE_SQL);
 			}
 		}
 	}
@@ -195,7 +203,39 @@ public class DbAdapter {
 			new String[] { Long.toString(id) });
 	}
 	
-	public long createFavourite(long serverId, int channelId) {
+	public long createToken(long serverId, String token) {
+		ContentValues contentValues = new ContentValues();
+		contentValues.put(TOKENS_VALUE, token);
+		contentValues.put(TOKENS_SERVER, serverId);
+		return db.insert(TABLE_TOKENS, null, contentValues);
+	}
+	
+	public List<String> fetchAllTokens(long serverId) {
+		Cursor cursor = db.query(TABLE_TOKENS, 
+				new String[] { TOKENS_VALUE }, 
+				TOKENS_SERVER+"=?", 
+				new String[] { String.valueOf(serverId) }, 
+				null, 
+				null, 
+				null);
+		cursor.moveToFirst();
+		
+		List<String> tokens = new ArrayList<String>();
+		
+		while(!cursor.isAfterLast()) {
+			String token = cursor.getString(cursor.getColumnIndex(TOKENS_VALUE));
+			tokens.add(token);
+			cursor.moveToNext();
+		}
+		
+		return tokens;
+	}
+	
+	public boolean deleteToken(String token, long serverId) {
+		return db.delete(TABLE_TOKENS, TOKENS_VALUE + " = " + token + " AND " + TOKENS_SERVER + " = " + serverId, null) > 0;
+	}
+	
+	public long createFavourite(long serverId, long channelId) {
 		ContentValues contentValues = new ContentValues();
 		contentValues.put(FAVOURITES_CHANNEL, channelId);
 		contentValues.put(FAVOURITES_SERVER, serverId);
@@ -217,7 +257,7 @@ public class DbAdapter {
 		return favourites;
 	}
 	
-	public List<Favourite> fetchAllFavourites(int serverId) {
+	public List<Favourite> fetchAllFavourites(long serverId) {
 
 		final Cursor c = db.query(
 			TABLE_FAVOURITES,

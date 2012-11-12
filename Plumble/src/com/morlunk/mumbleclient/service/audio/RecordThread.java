@@ -6,9 +6,9 @@ import android.annotation.TargetApi;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
-import android.os.Build.VERSION;
 import android.util.Log;
 
+import com.morlunk.mumbleclient.Globals;
 import com.morlunk.mumbleclient.Settings;
 import com.morlunk.mumbleclient.Settings.PlumbleCallMode;
 import com.morlunk.mumbleclient.jni.Native;
@@ -72,7 +72,7 @@ public class RecordThread implements Runnable {
 			throw new RuntimeException("No recording sample rate found");
 		}
 
-		Log.i("mumbleclient", "Selected recording sample rate: " +
+		Log.i(Globals.LOG_TAG, "Selected recording sample rate: " +
 							  recordingSampleRate);
 
 		frameSize = recordingSampleRate / 100;
@@ -111,9 +111,9 @@ public class RecordThread implements Runnable {
 		int audioSource = MediaRecorder.AudioSource.MIC;
 		
 		if(callMode == PlumbleCallMode.SPEAKERPHONE) {
-			audioSource = (VERSION.SDK_INT >= 11 ? MediaRecorder.AudioSource.VOICE_COMMUNICATION : MediaRecorder.AudioSource.MIC);
+			audioSource = (MediaRecorder.AudioSource.MIC);
 		} else if(callMode == PlumbleCallMode.VOICE_CALL) {
-			audioSource = (VERSION.SDK_INT >= 11 ? MediaRecorder.AudioSource.VOICE_COMMUNICATION : MediaRecorder.AudioSource.DEFAULT);
+			audioSource = (MediaRecorder.AudioSource.DEFAULT);
 		}
 		
 		AudioRecord ar = null;
