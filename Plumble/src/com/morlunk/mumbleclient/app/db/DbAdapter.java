@@ -232,7 +232,7 @@ public class DbAdapter {
 	}
 	
 	public boolean deleteToken(String token, long serverId) {
-		return db.delete(TABLE_TOKENS, TOKENS_VALUE + " = " + token + " AND " + TOKENS_SERVER + " = " + serverId, null) > 0;
+		return db.delete(TABLE_TOKENS, TOKENS_VALUE + " = ? AND " + TOKENS_SERVER + " = ?", new String[] { token, String.valueOf(serverId) }) > 0;
 	}
 	
 	public long createFavourite(long serverId, long channelId) {

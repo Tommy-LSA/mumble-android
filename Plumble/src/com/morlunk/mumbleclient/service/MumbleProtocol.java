@@ -2,9 +2,11 @@ package com.morlunk.mumbleclient.service;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import junit.framework.Assert;
+import net.sf.mumble.MumbleProto.Authenticate;
 import net.sf.mumble.MumbleProto.ChannelRemove;
 import net.sf.mumble.MumbleProto.ChannelState;
 import net.sf.mumble.MumbleProto.CodecVersion;
@@ -95,6 +97,12 @@ public class MumbleProtocol {
 		us.setSession(currentUser.session);
 		us.setChannelId(channelId);
 		conn.sendTcpMessage(MessageType.UserState, us);
+	}
+	
+	public void sendAccessTokens(List<String> tokens) {
+		Authenticate.Builder authenticate = Authenticate.newBuilder();
+		authenticate.addAllTokens(tokens);
+		conn.sendTcpMessage(MessageType.Authenticate, authenticate);
 	}
 
 	public void processTcp(final short type, final byte[] buffer)

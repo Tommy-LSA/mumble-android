@@ -67,7 +67,11 @@ interface ChannelProvider {
 	public void sendChannelMessage(String message);
 }
 
-public class ChannelActivity extends ConnectedActivity implements ChannelProvider, SensorEventListener {
+interface TokenDialogFragmentListener {
+	public void updateAccessTokens(List<String> tokens);
+}
+
+public class ChannelActivity extends ConnectedActivity implements ChannelProvider, TokenDialogFragmentListener, SensorEventListener {
 
 	public static final String JOIN_CHANNEL = "join_channel";
 	public static final String SAVED_STATE_VISIBLE_CHANNEL = "visible_channel";
@@ -310,7 +314,13 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 			return true;
 		case R.id.menu_access_tokens_button:
 			TokenDialogFragment dialogFragment = TokenDialogFragment.newInstance();
-			dialogFragment.show(getSupportFragmentManager(), "tokens");
+			//if(mViewPager != null) {
+				// Phone
+				//getSupportFragmentManager().beginTransaction().replace(R.id.pager, dialogFragment).commit();
+			//} else {
+				// Tablet
+				dialogFragment.show(getSupportFragmentManager(), "tokens");
+			//}
 			return true;
 		case R.id.menu_disconnect_item:
 			new Thread(new Runnable() {
@@ -389,6 +399,9 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 			mProgressDialog = null;
 		}
 		
+		// Send access tokens after connection.
+		sendAccessTokens();
+		
         // Load favourites
         favourites = loadFavourites();
         
@@ -461,6 +474,44 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 		if(settings.isVoiceActivity()) {
 			mService.setRecording(true);
 		}
+	}
+
+	/**
+	 * Retrieves and sends the access tokens for the active server from the database.
+	 */
+	public void sendAccessTokens() {
+		DbAdapter dbAdapter = new DbAdapter(this);
+		AsyncTask<DbAdapter, Void, Void> accessTask = new AsyncTask<DbAdapter, Void, Void>() {
+
+			@Override
+			protected Void doInBackground(DbAdapter... params) {
+				DbAdapter adapter = params[0];
+				adapter.open();
+				List<String> tokens = adapter.fetchAllTokens(mService.getServerId());
+				adapter.close();
+				mService.sendAccessTokens(tokens);
+				return null;
+			}
+		};
+		accessTask.execute(dbAdapter);
+	}
+	
+	/**
+	 * Sends the passed access tokens to the server.
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public void updateAccessTokens(List<String> tokens) {
+		AsyncTask<List<String>, Void, Void> accessTask = new AsyncTask<List<String>, Void, Void>() {
+
+			@Override
+			protected Void doInBackground(List<String>... params) {
+				List<String> tokens = params[0];
+				mService.sendAccessTokens(tokens);
+				return null;
+			}
+		};
+		accessTask.execute(tokens);
 	}
 
 	/**

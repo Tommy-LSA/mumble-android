@@ -635,6 +635,10 @@ public class MumbleService extends Service {
 	public void joinChannel(final int channelId) {
 		mProtocol.joinChannel(channelId);
 	}
+	
+	public void sendAccessTokens(List<String> tokens) {
+		mProtocol.sendAccessTokens(tokens);
+	}
 
 	@Override
 	public IBinder onBind(final Intent intent) {
