@@ -2,9 +2,11 @@ package com.morlunk.mumbleclient.app;
 
 import java.util.List;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
@@ -77,6 +79,7 @@ public class TokenDialogFragment extends DialogFragment {
 		Button addButton = (Button) view.findViewById(R.id.tokenAddButton);
 		addButton.setOnClickListener(new OnClickListener() {
 			
+			@TargetApi(8)
 			@Override
 			public void onClick(View v) {
 				String tokenText = tokenField.getText().toString().trim();
@@ -95,6 +98,9 @@ public class TokenDialogFragment extends DialogFragment {
 				dbAdapter.open();
 				dbAdapter.createToken(MumbleService.getCurrentService().getServerId(), tokenText);
 				dbAdapter.close();
+				
+				if(Build.VERSION.SDK_INT >= 8)
+					tokenList.smoothScrollToPosition(tokens.indexOf(tokenText)-1);
 			}
 		});
 		
