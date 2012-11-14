@@ -10,9 +10,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.inputmethod.EditorInfo;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -20,6 +22,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 
 import com.morlunk.mumbleclient.Globals;
 import com.morlunk.mumbleclient.R;
@@ -75,32 +78,24 @@ public class TokenDialogFragment extends DialogFragment {
 		tokenList.setAdapter(tokenAdapter);
 		
 		tokenField = (EditText) view.findViewById(R.id.tokenField);
+		tokenField.setOnEditorActionListener(new OnEditorActionListener() {
+			
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				if(actionId == EditorInfo.IME_ACTION_SEND) {
+					addToken();
+					return true;
+				}
+				return false;
+			}
+		});
 		
 		Button addButton = (Button) view.findViewById(R.id.tokenAddButton);
 		addButton.setOnClickListener(new OnClickListener() {
 			
-			@TargetApi(8)
 			@Override
 			public void onClick(View v) {
-				String tokenText = tokenField.getText().toString().trim();
-				
-				if(tokenText.equals("")) {
-					return;
-				}
-				
-				tokenField.setText("");
-				
-				Log.i(Globals.LOG_TAG, "Adding token: "+tokenText);
-				
-				tokens.add(tokenText);
-				tokenAdapter.notifyDataSetChanged();
-				
-				dbAdapter.open();
-				dbAdapter.createToken(MumbleService.getCurrentService().getServerId(), tokenText);
-				dbAdapter.close();
-				
-				if(Build.VERSION.SDK_INT >= 8)
-					tokenList.smoothScrollToPosition(tokens.indexOf(tokenText)-1);
+				addToken();
 			}
 		});
 		
@@ -123,6 +118,29 @@ public class TokenDialogFragment extends DialogFragment {
 		if(tokenListener != null) {
 			tokenListener.updateAccessTokens(tokens);
 		}
+	}
+	
+	@TargetApi(8)
+	private void addToken() {
+		String tokenText = tokenField.getText().toString().trim();
+		
+		if(tokenText.equals("")) {
+			return;
+		}
+		
+		tokenField.setText("");
+		
+		Log.i(Globals.LOG_TAG, "Adding token: "+tokenText);
+		
+		tokens.add(tokenText);
+		tokenAdapter.notifyDataSetChanged();
+		
+		dbAdapter.open();
+		dbAdapter.createToken(MumbleService.getCurrentService().getServerId(), tokenText);
+		dbAdapter.close();
+		
+		if(Build.VERSION.SDK_INT >= 8)
+			tokenList.smoothScrollToPosition(tokens.size()-1);
 	}
 	
 	class TokenAdapter extends ArrayAdapter<String> {

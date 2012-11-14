@@ -127,10 +127,12 @@ public class ChannelChatFragment extends SherlockFragment {
 				sb.append("(T) ");
 			}
 			
-			String actorName = msg.actor.name;
+			String actorName;
 			
-			if(actorName == null)
+			if(msg.actor == null || msg.actor.name == null)
 				actorName = "Server";
+			else
+				actorName = msg.actor.name;
 			
 			sb.append(actorName);
 			sb.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.abs__holo_blue_light)), sb.length()-actorName.length(), sb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);

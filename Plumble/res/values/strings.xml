@@ -60,6 +60,7 @@
     <string name="favoriteAdded">Favorite added.</string>
     <string name="noFavorites">No favorited channels.</string>
     <string name="accessTokens">Access Tokens</string>
+    <string name="accessAdd">Add Access Token</string>
     
 
 </resources>

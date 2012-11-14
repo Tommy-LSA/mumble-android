@@ -20,7 +20,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/delete_light"
-        android:padding="5dp"
-        android:background="@null"/>
+        style="@android:style/Widget.Holo.Light.Button.Borderless.Small"/>
 
 </LinearLayout>
