@@ -40,6 +40,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -166,11 +167,11 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
         
         // Set up PTT button.
         if(settings.isPushToTalk()) {
+        	RelativeLayout pushView = (RelativeLayout) findViewById(R.id.pushview);
+        	pushView.setVisibility(View.VISIBLE);
+        	
         	mTalkButton = (Button) findViewById(R.id.pushtotalk);
-        	mTalkButton.setVisibility(View.VISIBLE);
-        	
         	mTalkToggleBox = (CheckBox) findViewById(R.id.pushtotalk_toggle);
-        	
         	mTalkGradient = findViewById(R.id.pushgradient);
         	
         	mTalkToggleBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
@@ -270,6 +271,9 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
     }
     
     public void setPushToTalk(final boolean talking) {
+    	if(mService.isRecording() == talking)
+    		return;
+    	
     	mService.setRecording(talking);
     	
 		Animation fade = AnimationUtils.loadAnimation(ChannelActivity.this, talking ? R.anim.fade_in : R.anim.fade_out);
@@ -414,7 +418,7 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 		if(settings.isPushToTalk() && 
 				keyCode == settings.getPushToTalkKey() && 
 				event.getAction() == KeyEvent.ACTION_DOWN) {
-			//mTalkToggleButton.setChecked(true);
+			setPushToTalk(true);
 			return true;
 		}
 
@@ -427,7 +431,7 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
     	if(settings.isPushToTalk() && 
 				keyCode == settings.getPushToTalkKey() && 
 				event.getAction() == KeyEvent.ACTION_UP) {
-			//mTalkToggleButton.setChecked(false);
+			setPushToTalk(false);
 			return true;
 		}
     	
