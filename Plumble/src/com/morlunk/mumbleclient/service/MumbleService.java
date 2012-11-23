@@ -718,8 +718,10 @@ public class MumbleService extends Service {
 
 	@TargetApi(16)
 	public void setRecording(final boolean state) {
-		if (mProtocol != null && mProtocol.currentUser != null &&
-			mRecordThread == null && state) {
+		if(mProtocol == null || mProtocol.currentUser == null)
+			return;
+		
+		if (state) {
 			// start record
 			// TODO check initialized
 			mRecordThread = new Thread(new RecordThread(this, settings.isVoiceActivity()), "record");

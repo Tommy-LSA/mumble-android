@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.morlunk.mumbleclient"
     android:installLocation="auto"
-    android:versionCode="20"
-    android:versionName="1.4.1" >
+    android:versionCode="21"
+    android:versionName="1.4.2" >
 
     <uses-sdk
         android:minSdkVersion="7"
@@ -28,7 +28,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".app.ServerInfo" android:parentActivityName=".app.ServerList"/>
-        <activity android:name=".app.ChannelActivity" android:launchMode="singleInstance"/>
+        <activity android:name=".app.ChannelActivity" android:launchMode="singleInstance" />
         <activity android:name=".app.Preferences" android:parentActivityName=".app.ServerList"/>
 
         <service

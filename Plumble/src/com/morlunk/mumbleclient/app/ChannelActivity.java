@@ -27,16 +27,22 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.AnimationUtils;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageView;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.OnNavigationListener;
@@ -71,6 +77,7 @@ interface TokenDialogFragmentListener {
 	public void updateAccessTokens(List<String> tokens);
 }
 
+
 public class ChannelActivity extends ConnectedActivity implements ChannelProvider, TokenDialogFragmentListener, SensorEventListener {
 
 	public static final String JOIN_CHANNEL = "join_channel";
@@ -97,7 +104,9 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 	private ChannelSpinnerAdapter channelAdapter;
 
 	private ProgressDialog mProgressDialog;
-	private ToggleButton mTalkToggleButton;
+	private Button mTalkButton;
+	private CheckBox mTalkToggleBox;
+	private View mTalkGradient;
 	
 	// Fragments
 	private ChannelListFragment listFragment;
@@ -157,15 +166,42 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
         
         // Set up PTT button.
         if(settings.isPushToTalk()) {
-        	mTalkToggleButton = (ToggleButton) findViewById(R.id.pushtotalk);
-        	mTalkToggleButton.setVisibility(View.VISIBLE);
-        	mTalkToggleButton.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+        	mTalkButton = (Button) findViewById(R.id.pushtotalk);
+        	mTalkButton.setVisibility(View.VISIBLE);
+        	
+        	mTalkToggleBox = (CheckBox) findViewById(R.id.pushtotalk_toggle);
+        	
+        	mTalkGradient = findViewById(R.id.pushgradient);
+        	
+        	mTalkToggleBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 				
 				@Override
 				public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-					if(mService != null) {
-						mService.setRecording(isChecked);
+					if(!isChecked) {
+						setPushToTalk(false);
 					}
+				}
+			});
+        	
+        	mTalkButton.setOnTouchListener(new OnTouchListener() {
+				
+				@Override
+				public boolean onTouch(View v, MotionEvent event) {
+					if(mService == null) {
+						return false;
+					}
+					
+					if(!mTalkToggleBox.isChecked()) {
+						if(event.getAction() == MotionEvent.ACTION_DOWN)
+							setPushToTalk(true);
+						else if(event.getAction() == MotionEvent.ACTION_UP)
+							setPushToTalk(false);
+					} else {
+						if(event.getAction() == MotionEvent.ACTION_UP) 
+							setPushToTalk(!mService.isRecording());
+					}
+					
+					return true;
 				}
 			});
         }
@@ -231,6 +267,30 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
         });
         
         */
+    }
+    
+    public void setPushToTalk(final boolean talking) {
+    	mService.setRecording(talking);
+    	
+		Animation fade = AnimationUtils.loadAnimation(ChannelActivity.this, talking ? R.anim.fade_in : R.anim.fade_out);
+		fade.setAnimationListener(new AnimationListener() {
+			@Override
+			public void onAnimationStart(Animation animation) {
+				if(talking)
+					mTalkGradient.setVisibility(View.VISIBLE);
+			}
+			
+			@Override
+			public void onAnimationRepeat(Animation animation) {}
+			
+			@Override
+			public void onAnimationEnd(Animation animation) {
+				if(!talking)
+					mTalkGradient.setVisibility(View.INVISIBLE);
+			}
+		});
+		mTalkGradient.startAnimation(fade);
+    	
     }
     
     /* (non-Javadoc)
@@ -354,7 +414,7 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 		if(settings.isPushToTalk() && 
 				keyCode == settings.getPushToTalkKey() && 
 				event.getAction() == KeyEvent.ACTION_DOWN) {
-			mTalkToggleButton.setChecked(true);
+			//mTalkToggleButton.setChecked(true);
 			return true;
 		}
 
@@ -367,7 +427,7 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
     	if(settings.isPushToTalk() && 
 				keyCode == settings.getPushToTalkKey() && 
 				event.getAction() == KeyEvent.ACTION_UP) {
-			mTalkToggleButton.setChecked(false);
+			//mTalkToggleButton.setChecked(false);
 			return true;
 		}
     	
