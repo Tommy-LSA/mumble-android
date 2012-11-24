@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import net.sf.mumble.MumbleProto.RequestBlob;
@@ -31,7 +32,8 @@ public class UserListAdapter extends BaseAdapter {
 	Comparator<User> userComparator = new Comparator<User>() {
 		@Override
 		public int compare(final User object1, final User object2) {
-			return object1.name.compareTo(object2.name);
+			return object1.name.toLowerCase(Locale.ENGLISH)
+					.compareTo(object2.name.toLowerCase(Locale.ENGLISH));
 		}
 	};
 
