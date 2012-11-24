@@ -606,12 +606,18 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 				getString(R.string.connectionProgressTitle),
 				getString(message),
 				true,
-				false,
+				true,
 				new OnCancelListener() {
 					@Override
 					public void onCancel(final DialogInterface dialog) {
-						mService.disconnect();
 						mProgressDialog.setMessage(getString(R.string.connectionProgressDisconnectingMessage));
+						new Thread(new Runnable() {
+							
+							@Override
+							public void run() {
+								mService.disconnect();								
+							}
+						}).start();
 					}
 				});
 		} else {
