@@ -146,6 +146,10 @@ public class ChannelChatFragment extends SherlockFragment {
 
 	void sendMessage(final TextView v) {
 		String text = v.getText().toString();
+		if(text == null || text.equals("")) {
+			return;
+		}
+		
 		AsyncTask<String, Void, Void> messageTask = new AsyncTask<String, Void, Void>() {
 			@Override
 			protected Void doInBackground(String... params) {
