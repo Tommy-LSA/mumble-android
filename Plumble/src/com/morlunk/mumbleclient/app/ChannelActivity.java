@@ -5,8 +5,6 @@ import java.util.List;
 
 import net.sf.mumble.MumbleProto.PermissionDenied.DenyType;
 import android.app.AlertDialog;
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -24,7 +22,6 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.view.ViewPager;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -328,8 +325,10 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
         	updateMuteDeafenMenuItems(mService.isMuted(), mService.isDeafened());
         
         // Clear chat notifications when activity is re-opened
-        if(mService != null)
+        if(mService != null) {
+        	mService.setActivityVisible(true);
         	mService.clearChatNotification();
+        }
     }
     
     @Override
@@ -338,6 +337,9 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
     	
     	if(settings.getCallMode() == PlumbleCallMode.VOICE_CALL)
     		sensorManager.unregisterListener(this);
+    	
+    	if(mService != null)
+        	mService.setActivityVisible(false);
     }
     
     @Override
@@ -863,9 +865,6 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
     class ChannelServiceObserver extends BaseServiceObserver {
 		@Override
 		public void onMessageReceived(final Message msg) throws RemoteException {
-	        // Don't show unread messages when activity is active
-	        if(mService != null && settings.isChatNotifyEnabled())
-	        	mService.clearChatNotification();
 			chatFragment.addMessage(msg);
 		}
 

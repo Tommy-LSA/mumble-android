@@ -309,7 +309,7 @@ public class MumbleService extends Service {
 				public void process() {
 					messages.add(msg);
 					
-					if(settings.isChatNotifyEnabled()) {
+					if(settings.isChatNotifyEnabled() && !activityVisible) {
 						unreadMessages.add(msg);
 						showChatNotification();
 					}
@@ -492,6 +492,11 @@ public class MumbleService extends Service {
 	private final LocalBinder mBinder = new LocalBinder();
 	final Handler handler = new Handler();
 
+	/**
+	 * Used to monitor the state of the server list activity, to judge whether to show chat notifications or not.
+	 */
+	private boolean activityVisible = true;
+	
 	int state;
 	boolean synced;
 	int serviceState;
@@ -603,6 +608,14 @@ public class MumbleService extends Service {
 		final String r = errorString;
 		errorString = null;
 		return r;
+	}
+
+	public boolean isActivityVisible() {
+		return activityVisible;
+	}
+
+	public void setActivityVisible(boolean activityVisible) {
+		this.activityVisible = activityVisible;
 	}
 
 	public List<Message> getMessageList() {
@@ -921,7 +934,12 @@ public class MumbleService extends Service {
 	}
 	
 	public void showChatNotification() {
-		mStatusNotificationBuilder.setTicker(getResources().getString(R.string.messageReceived));
+		if(unreadMessages.size() == 0)
+			return;
+		
+		Message lastMessage = unreadMessages.get(unreadMessages.size()-1);
+		
+		mStatusNotificationBuilder.setTicker(lastMessage.actor.name+": "+lastMessage.message);
 		
 		NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
 		
