@@ -27,6 +27,9 @@ public class Settings {
 	public static final String PREF_QUALITY = "quality";
 	public static final String DEFAULT_QUALITY = "60000";
 	
+	public static final String PREF_CHAT_NOTIFY = "chatNotify";
+	public static final Boolean DEFAULT_CHAT_NOTIFY = true;
+	
 	public static final String PREF_THEME = "theme";
 	public static final String ARRAY_THEME_LIGHTDARK = "lightDark";
 	public static final String ARRAY_THEME_DARK = "dark";
@@ -96,6 +99,10 @@ public class Settings {
 	
 	public boolean isPushToTalk() {
 		return preferences.getString(PREF_METHOD, ARRAY_METHOD_VOICE).equals(ARRAY_METHOD_PTT);
+	}
+	
+	public boolean isChatNotifyEnabled() {
+		return preferences.getBoolean(PREF_CHAT_NOTIFY, DEFAULT_CHAT_NOTIFY);
 	}
 	
 	public int getLastChannel(int serverId) {

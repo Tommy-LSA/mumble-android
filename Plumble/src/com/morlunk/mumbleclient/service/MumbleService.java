@@ -1,7 +1,5 @@
 package com.morlunk.mumbleclient.service;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -16,6 +14,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Handler;
@@ -309,6 +308,11 @@ public class MumbleService extends Service {
 				@Override
 				public void process() {
 					messages.add(msg);
+					
+					if(settings.isChatNotifyEnabled()) {
+						unreadMessages.add(msg);
+						showChatNotification();
+					}
 				}
 
 				@Override
@@ -469,6 +473,8 @@ public class MumbleService extends Service {
 	public static final String EXTRA_USER = "mumbleclient.extra.USER";
 	public static final String EXTRA_SERVER_ID = "mumbleclient.extra.SERVER_ID";
 	
+	public static final Integer STATUS_NOTIFICATION_ID = 1;
+	
 	private static MumbleService currentService;
 
 	private MumbleConnection mClient;
@@ -480,8 +486,8 @@ public class MumbleService extends Service {
 	private Thread mClientThread;
 	private Thread mRecordThread;
 
-	Notification mNotification;
-	NotificationCompat.Builder mNotificationBuilder;
+	private Notification mStatusNotification;
+	private NotificationCompat.Builder mStatusNotificationBuilder;
 
 	private final LocalBinder mBinder = new LocalBinder();
 	final Handler handler = new Handler();
@@ -491,21 +497,12 @@ public class MumbleService extends Service {
 	int serviceState;
 	String errorString;
 	final List<Message> messages = new LinkedList<Message>();
+	final List<Message> unreadMessages = new LinkedList<Message>();
 	final List<Channel> channels = new ArrayList<Channel>();
 	final List<User> users = new ArrayList<User>();
 
 	// Use concurrent hash map so we can modify the collection while iterating.
 	private final Map<Object, IServiceObserver> observers = new ConcurrentHashMap<Object, IServiceObserver>();
-
-	private static final Class<?>[] mStartForegroundSignature = new Class[] {
-			int.class, Notification.class };
-	private static final Class<?>[] mStopForegroundSignature = new Class[] { boolean.class };
-
-	private Method mStartForeground;
-	private Method mStopForeground;
-
-	private final Object[] mStartForegroundArgs = new Object[2];
-	private final Object[] mStopForegroundArgs = new Object[1];
 
 	private ServiceProtocolHost mProtocolHost;
 	private ServiceConnectionHost mConnectionHost;
@@ -651,19 +648,7 @@ public class MumbleService extends Service {
 		super.onCreate();
 		
 		settings = new Settings(this);
-
-		try {
-			mStartForeground = getClass().getMethod(
-				"startForeground",
-				mStartForegroundSignature);
-			mStopForeground = getClass().getMethod(
-				"stopForeground",
-				mStopForegroundSignature);
-		} catch (final NoSuchMethodException e) {
-			// Running on an older platform.
-			mStartForeground = mStopForeground = null;
-		}
-
+		
 		Log.i(Globals.LOG_TAG, "MumbleService: Created");
 		serviceState = CONNECTION_STATE_DISCONNECTED;
 		
@@ -766,11 +751,12 @@ public class MumbleService extends Service {
 			status = "Muted and deafened.";
 		}
 
-		mNotificationBuilder.setTicker(status);
-		mNotificationBuilder.setContentInfo(status);
+		mStatusNotificationBuilder.setTicker(status);
+		mStatusNotificationBuilder.setContentInfo(status);
 
-		mNotification = mNotificationBuilder.build();
-		startForegroundCompat(1, mNotification);
+		mStatusNotification = mStatusNotificationBuilder.build();
+		NotificationManager manager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+		manager.notify(STATUS_NOTIFICATION_ID, mStatusNotification);
 	}
 
 	public void unregisterObserver(final IServiceObserver observer) {
@@ -893,9 +879,10 @@ public class MumbleService extends Service {
 	}
 
 	void hideNotification() {
-		if (mNotification != null) {
-			stopForegroundCompat(1);
-			mNotification = null;
+		if (mStatusNotification != null) {
+			NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+			notificationManager.cancel(STATUS_NOTIFICATION_ID);
+			mStatusNotification = null;
 		}
 	}
 
@@ -906,6 +893,7 @@ public class MumbleService extends Service {
 		builder.setContentTitle("Plumble");
 		builder.setContentText("Connected.");
 		builder.setPriority(Notification.PRIORITY_HIGH);
+		builder.setOngoing(true);
 		
 		// Add notification triggers
 		Intent muteIntent = new Intent(this, MumbleNotificationService.class);
@@ -925,63 +913,39 @@ public class MumbleService extends Service {
 		
 		builder.setContentIntent(pendingIntent);
 		
-		mNotificationBuilder = builder;
-		mNotification = mNotificationBuilder.build();
-		startForegroundCompat(1, mNotification);
+		mStatusNotificationBuilder = builder;
+		mStatusNotification = mStatusNotificationBuilder.build();
+		
+		NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+		notificationManager.notify(STATUS_NOTIFICATION_ID, mStatusNotification);
 	}
-
-	/**
-	 * This is a wrapper around the new startForeground method, using the older
-	 * APIs if it is not available.
-	 */
-	void startForegroundCompat(final int id, final Notification notification) {
-		// If we have the new startForeground API, then use it.
-		if (mStartForeground != null) {
-			mStartForegroundArgs[0] = Integer.valueOf(id);
-			mStartForegroundArgs[1] = notification;
-			try {
-				mStartForeground.invoke(this, mStartForegroundArgs);
-			} catch (final InvocationTargetException e) {
-				// Should not happen.
-				Log.w(Globals.LOG_TAG, "Unable to invoke startForeground", e);
-			} catch (final IllegalAccessException e) {
-				// Should not happen.
-				Log.w(Globals.LOG_TAG, "Unable to invoke startForeground", e);
-			}
-			return;
+	
+	public void showChatNotification() {
+		mStatusNotificationBuilder.setTicker(getResources().getString(R.string.messageReceived));
+		
+		NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
+		
+		for(Message message : unreadMessages) {
+			inboxStyle.addLine(message.actor.name+": "+message.message);
 		}
-
-		// Fall back on the old API.
-		//setForeground(true);
-		((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).notify(
-			id,
-			notification);
+		
+		mStatusNotificationBuilder.setStyle(inboxStyle);
+		
+		Notification notificationCompat = mStatusNotificationBuilder.build();
+		NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		
+		notificationManager.notify(STATUS_NOTIFICATION_ID, notificationCompat);
 	}
-
-	/**
-	 * This is a wrapper around the new stopForeground method, using the older
-	 * APIs if it is not available.
-	 */
-	void stopForegroundCompat(final int id) {
-		// If we have the new stopForeground API, then use it.
-		if (mStopForeground != null) {
-			mStopForegroundArgs[0] = Boolean.TRUE;
-			try {
-				mStopForeground.invoke(this, mStopForegroundArgs);
-			} catch (final InvocationTargetException e) {
-				// Should not happen.
-				Log.w(Globals.LOG_TAG, "Unable to invoke stopForeground", e);
-			} catch (final IllegalAccessException e) {
-				// Should not happen.
-				Log.w(Globals.LOG_TAG, "Unable to invoke stopForeground", e);
-			}
-			return;
-		}
-
-		// Fall back on the old API.  Note to cancel BEFORE changing the
-		// foreground state, since we could be killed at that point.
-		((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).cancel(id);
-		//setForeground(false);
+	
+	public void clearChatNotification() {
+		unreadMessages.clear();
+		mStatusNotificationBuilder.setTicker(null);
+		mStatusNotificationBuilder.setStyle(null);
+		
+		Notification notificationCompat = mStatusNotificationBuilder.build();
+		NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		
+		notificationManager.notify(STATUS_NOTIFICATION_ID, notificationCompat);
 	}
 
 	void updateConnectionState() {

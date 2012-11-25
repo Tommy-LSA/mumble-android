@@ -62,6 +62,8 @@
     <string name="accessTokens">Access Tokens</string>
     <string name="accessAdd">Add Access Token</string>
     <string name="pushToTalkHint">(tick checkbox to enable toggle)</string>
+    <string name="messageReceived">New message</string>
+    <string name="general">General</string>
     
 
 </resources>

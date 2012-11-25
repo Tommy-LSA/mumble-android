@@ -73,4 +73,6 @@
 	<string name="colorizechannelsSum">Whether to use color to highlight root channels and active channels.</string>
 	<string name="colorthreshold">Secondary Color Threshold</string>
 	<string name="colorthresholdSum">If this number of users is reached in a channel, the channel name appears red.</string>
+	<string name="chatNotifications">Chat Notifications</string>
+	<string name="chatNotificationsSum">Show notifications when a user posts in chat.</string>
 </resources>

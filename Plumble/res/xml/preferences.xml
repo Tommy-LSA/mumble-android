@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <PreferenceCategory android:title="@string/authentication" >
+    <PreferenceCategory android:title="@string/general">
+        <CheckBoxPreference android:title="@string/chatNotifications" android:summary="@string/chatNotificationsSum" android:key="chatNotify" android:defaultValue="true"/>
+    </PreferenceCategory><PreferenceCategory android:title="@string/authentication" >
         <ListPreference
             android:key="certificatePath"
             android:summary="@string/certificateFileSum"
@@ -79,5 +81,6 @@
             android:title="@string/audioQuality" android:summary="@string/audioQualitySum"/>
         <CheckBoxPreference android:key="forceTcp" android:title="@string/forceTcp" android:summary="@string/forceTcpSum" android:defaultValue="false"/>
     </PreferenceCategory>
+    
 
 </PreferenceScreen>
