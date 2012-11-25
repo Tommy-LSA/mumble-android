@@ -66,6 +66,14 @@ public class AudioOutput implements Runnable {
 	public AudioOutput(final Context ctx, final AudioOutputHost host) {
 		this.settings = new Settings(ctx);
 		this.host = host;
+		
+		PlumbleCallMode callMode = settings.getCallMode();
+		int stream = AudioManager.STREAM_MUSIC;
+		if(callMode == PlumbleCallMode.SPEAKERPHONE) {
+			stream = AudioManager.STREAM_MUSIC;
+		} else if(callMode == PlumbleCallMode.VOICE_CALL) {
+			stream = AudioManager.STREAM_VOICE_CALL;
+		}
 
 		minBufferSize = AudioTrack.getMinBufferSize(
 			MumbleProtocol.SAMPLE_RATE,
@@ -80,14 +88,6 @@ public class AudioOutput implements Runnable {
 											   MumbleProtocol.FRAME_SIZE);
 
 		bufferSize = frameCount * MumbleProtocol.FRAME_SIZE;
-		
-		PlumbleCallMode callMode = settings.getCallMode();
-		int stream = AudioManager.STREAM_MUSIC;
-		if(callMode == PlumbleCallMode.SPEAKERPHONE) {
-			stream = AudioManager.STREAM_MUSIC;
-		} else if(callMode == PlumbleCallMode.VOICE_CALL) {
-			stream = AudioManager.STREAM_VOICE_CALL;
-		}
 
 		at = new AudioTrack(
 			stream,

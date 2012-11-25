@@ -100,6 +100,8 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
     // Favourites
     private List<Favourite> favourites;
     private MenuItem favouritesItem;
+    private MenuItem mutedButton;
+    private MenuItem deafenedButton;
     
 	private Channel visibleChannel;
 	private ChannelSpinnerAdapter channelAdapter;
@@ -318,6 +320,9 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
     	
     	if(settings.getCallMode() == PlumbleCallMode.VOICE_CALL)
     		sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_UI);
+    	
+        if(mService != null && mService.getCurrentUser() != null)
+        	updateMuteDeafenMenuItems(mService.isMuted(), mService.isDeafened());
     }
     
     @Override
@@ -333,6 +338,14 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
         getSupportMenuInflater().inflate(R.menu.activity_channel, menu);      
         
         favouritesItem = menu.findItem(R.id.menu_favorite_button);
+        mutedButton = menu.findItem(R.id.menu_mute_button);
+        deafenedButton = menu.findItem(R.id.menu_deafen_button);
+        
+        if(mService != null &&
+        		mService.getCurrentUser() != null) {
+        	updateMuteDeafenMenuItems(mService.isMuted(), mService.isDeafened());
+        }
+        	
         
         return true;
     }
@@ -358,6 +371,17 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
     	favouritesItem.setIcon(isFavouriteChannel ? R.drawable.ic_action_favorite_on : R.drawable.ic_action_favorite_off);
     }
     
+    /**
+     * Updates the 'muted' and 'deafened' action bar icons to reflect the audio status.
+     */
+    public void updateMuteDeafenMenuItems(boolean muted, boolean deafened) {
+    	if(mutedButton == null || deafenedButton == null)
+    		return;
+
+    	mutedButton.setIcon(!muted ? R.drawable.microphone : R.drawable.ic_action_microphone_muted);
+    	deafenedButton.setIcon(!deafened ? R.drawable.ic_headphones : R.drawable.ic_action_headphones_deafened);
+    }
+    
     /* (non-Javadoc)
      * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
      */
@@ -366,9 +390,17 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
     	
     	switch (item.getItemId()) {
 		case R.id.menu_mute_button:
+			if(!mService.isMuted()) {
+				// Switching to muted
+				updateMuteDeafenMenuItems(true, mService.isDeafened());
+			} else {
+				// Switching to unmuted
+				updateMuteDeafenMenuItems(false, false);
+			}
 			mService.setMuted(!mService.isMuted());
 			return true;
 		case R.id.menu_deafen_button:
+			updateMuteDeafenMenuItems(!mService.isDeafened(), !mService.isDeafened());
 			mService.setDeafened(!mService.isDeafened());
 			return true;
 		case R.id.menu_favorite_button:

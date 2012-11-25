@@ -13,7 +13,9 @@
 		android:linksClickable="true"
 		android:textIsSelectable="true"
 		android:autoLink="all"
-		android:gravity="bottom"/>
+		android:gravity="top"
+		android:layout_marginLeft="10dp"
+		android:layout_marginRight="10dp"/>
 	<LinearLayout
 		android:id="@+id/LinearLayout01"
 		android:layout_height="wrap_content"
