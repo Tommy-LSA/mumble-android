@@ -155,6 +155,7 @@ public class RecordThread implements Runnable {
 				}
 				
 				if(voiceActivity &&
+						mService != null &&
 						mService.isConnected() &&
 						mService.getCurrentUser() != null) {
 					long totalAmplitude = 0;

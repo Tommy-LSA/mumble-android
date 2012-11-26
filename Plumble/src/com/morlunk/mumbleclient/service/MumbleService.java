@@ -939,12 +939,12 @@ public class MumbleService extends Service {
 		
 		Message lastMessage = unreadMessages.get(unreadMessages.size()-1);
 		
-		mStatusNotificationBuilder.setTicker(lastMessage.actor.name+": "+lastMessage.message);
+		mStatusNotificationBuilder.setTicker(((lastMessage.actor != null && lastMessage.actor.name != null) ? lastMessage.actor.name : "Server") +": "+lastMessage.message);
 		
 		NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
 		
 		for(Message message : unreadMessages) {
-			inboxStyle.addLine(message.actor.name+": "+message.message);
+			inboxStyle.addLine(((lastMessage.actor != null && lastMessage.actor.name != null) ? lastMessage.actor.name : "Server")+": "+message.message);
 		}
 		
 		mStatusNotificationBuilder.setStyle(inboxStyle);

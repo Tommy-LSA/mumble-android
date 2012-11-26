@@ -325,7 +325,7 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
         	updateMuteDeafenMenuItems(mService.isMuted(), mService.isDeafened());
         
         // Clear chat notifications when activity is re-opened
-        if(mService != null) {
+        if(mService != null && settings.isChatNotifyEnabled()) {
         	mService.setActivityVisible(true);
         	mService.clearChatNotification();
         }
