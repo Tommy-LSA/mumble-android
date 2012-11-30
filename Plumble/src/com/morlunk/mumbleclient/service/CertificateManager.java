@@ -17,7 +17,6 @@ import java.security.cert.X509Certificate;
 import java.sql.Date;
 
 import org.spongycastle.asn1.x500.X500Name;
-import org.spongycastle.asn1.x509.AlgorithmIdentifier;
 import org.spongycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.spongycastle.cert.X509CertificateHolder;
 import org.spongycastle.cert.X509v3CertificateBuilder;
@@ -41,7 +40,7 @@ public class CertificateManager {
 		
 		KeyPair keyPair = generator.generateKeyPair();
 		
-		SubjectPublicKeyInfo publicKeyInfo = new SubjectPublicKeyInfo(AlgorithmIdentifier.getInstance("RSA"), keyPair.getPublic().getEncoded());
+		SubjectPublicKeyInfo publicKeyInfo = SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded());
 		ContentSigner signer = new JcaContentSignerBuilder("SHA1withRSA").setProvider("SC").build(keyPair.getPrivate());
 		
 		Date startDate = new Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000);
