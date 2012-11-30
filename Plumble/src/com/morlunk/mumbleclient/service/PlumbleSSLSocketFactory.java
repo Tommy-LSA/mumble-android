@@ -7,10 +7,15 @@ import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Provider;
 import java.security.SecureRandom;
+import java.security.Security;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.Set;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -31,7 +36,7 @@ public class PlumbleSSLSocketFactory extends SSLSocketFactory {
 	public PlumbleSSLSocketFactory(KeyStore keystore,
 			String keystorePassword, KeyStore truststore) throws NoSuchAlgorithmException,
 			KeyManagementException, KeyStoreException,
-			UnrecoverableKeyException {
+			UnrecoverableKeyException, NoSuchProviderException {
 		super(keystore, keystorePassword, truststore);
 		
 		TrustManager trustManager = new X509TrustManager() {

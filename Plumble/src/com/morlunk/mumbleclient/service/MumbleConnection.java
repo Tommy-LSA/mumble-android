@@ -15,6 +15,8 @@ import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Security;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
@@ -51,6 +53,7 @@ import com.morlunk.mumbleclient.service.MumbleProtocol.MessageType;
  * @author pcgod
  */
 public class MumbleConnection implements Runnable {
+	
 	/**
 	 * Socket reader for the TCP socket. Interprets the Mumble TCP envelope and
 	 * extracts the data inside.
@@ -321,6 +324,11 @@ public class MumbleConnection implements Runnable {
 						"Could not connect to Mumble server \"%s:%s\"",
 						host,
 						port), e);
+			} catch (NoSuchProviderException e) {
+				reportError(String.format(
+						"Could not connect to Mumble server \"%s:%s\"",
+						host,
+						port), e);
 			}
 
 			// If we couldn't finish connecting, return.
@@ -580,7 +588,7 @@ public class MumbleConnection implements Runnable {
 	}
 
 	protected Socket connectTcp() throws NoSuchAlgorithmException,
-		KeyManagementException, IOException, UnknownHostException, KeyStoreException, CertificateException, UnrecoverableKeyException {
+		KeyManagementException, IOException, UnknownHostException, KeyStoreException, CertificateException, UnrecoverableKeyException, NoSuchProviderException {
 		
 		KeyStore keyStore = null;
 		
