@@ -75,4 +75,6 @@
 	<string name="colorthresholdSum">If this number of users is reached in a channel, the channel name appears red.</string>
 	<string name="chatNotifications">Chat Notifications</string>
 	<string name="chatNotificationsSum">Show notifications when a user posts in chat.</string>
+	<string name="certificateGenerate">Generate Certificate</string>
+	<string name="certificateGenerateSum">Generates a new self-signed Plumble certificate. Recommended for beginners.</string>
 </resources>

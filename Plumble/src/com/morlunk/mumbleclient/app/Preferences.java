@@ -2,22 +2,33 @@ package com.morlunk.mumbleclient.app;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.List;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.ListPreference;
+import android.preference.Preference;
+import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
+import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.morlunk.mumbleclient.R;
+import com.morlunk.mumbleclient.Settings;
+import com.morlunk.mumbleclient.service.PlumbleCertificateManager;
 
 public class Preferences extends SherlockPreferenceActivity {
-	
+
+	private static final String CERTIFICATE_GENERATE_KEY = "certificateGenerate";
 	private static final String CERTIFICATE_PATH_KEY = "certificatePath";
 	private static final String CERTIFICATE_FOLDER = "Plumble";
 	private static final String CERTIFICATE_EXTENSION = "p12";
@@ -29,7 +40,7 @@ public class Preferences extends SherlockPreferenceActivity {
 	@Override
 	protected void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Preferences.context = getApplicationContext();
+		Preferences.context = this;
 		
 		if(android.os.Build.VERSION.SDK_INT >= 11) {
 			getFragmentManager().beginTransaction().replace(android.R.id.content, new PreferencesFragment()).commit();
@@ -37,12 +48,22 @@ public class Preferences extends SherlockPreferenceActivity {
 			addPreferencesFromResource(R.xml.preferences);
 			
 			// Set certificate preference
-			ListPreference certificatePathPreference = (ListPreference) findPreference(CERTIFICATE_PATH_KEY);
-			updateCertificatePath(certificatePathPreference);
+			final ListPreference certificatePathPreference = (ListPreference) findPreference(CERTIFICATE_PATH_KEY);
+			if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED))
+				updateCertificatePath(certificatePathPreference);
+			
+			Preference certificateGeneratePreference = findPreference(CERTIFICATE_GENERATE_KEY);
+			certificateGeneratePreference.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+				@Override
+				public boolean onPreferenceClick(Preference preference) {
+					generateCertificate(certificatePathPreference);
+					return true;
+				}
+			});
 		}
 	}
 
-	public static Context getAppContext() {
+	public static Context getContext() {
 		return Preferences.context;
 	}
 	
@@ -76,10 +97,79 @@ public class Preferences extends SherlockPreferenceActivity {
 		for(int x=0;x<certificateFiles.size();x++) {
 			certificateNames[x] = certificateFiles.get(x).getName();
 		}
-		certificateNames[certificateNames.length-1] = getAppContext().getResources().getString(R.string.noCert);
+		certificateNames[certificateNames.length-1] = getContext().getResources().getString(R.string.noCert);
 		
 		preference.setEntries(certificateNames);
 		preference.setEntryValues(certificatePaths);
+	}
+	
+	/**
+	 * Generates a new certificate and sets it as active.
+	 * @param certificateList If passed, will update the list of certificates available. Messy.
+	 */
+	private static void generateCertificate(final ListPreference certificateList) {
+		AsyncTask<File, Void, X509Certificate> task = new AsyncTask<File, Void, X509Certificate>() {
+			
+			private ProgressDialog loadingDialog;
+			private File certificatePath;
+			
+			@Override
+			protected void onPreExecute() {
+				super.onPreExecute();
+				
+				loadingDialog = new ProgressDialog(getContext());
+				loadingDialog.setIndeterminate(true);
+				loadingDialog.setMessage(getContext().getResources().getString(R.string.generateCertProgress));
+				loadingDialog.setOnCancelListener(new OnCancelListener() {
+					
+					@Override
+					public void onCancel(DialogInterface arg0) {
+						cancel(true);
+						
+					}
+				});
+				loadingDialog.show();
+			}
+			@Override
+			protected X509Certificate doInBackground(File... params) {
+				certificatePath = params[0];
+				try {
+					X509Certificate certificate = PlumbleCertificateManager.createCertificate(certificatePath);
+					
+					Settings settings = new Settings(context);
+					settings.setCertificatePath(certificatePath.getAbsolutePath());
+					return certificate;
+				} catch (Exception e) {
+					e.printStackTrace();
+					return null;
+				}
+			}
+			
+			@Override
+			protected void onPostExecute(X509Certificate result) {
+				super.onPostExecute(result);
+				if(result != null) {
+					if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+						updateCertificatePath(certificateList); // Update cert path after
+						certificateList.setValue(certificatePath.getAbsolutePath());
+					}
+					
+					Toast.makeText(getContext(), context.getString(R.string.generateCertSuccess, certificatePath.getName()), Toast.LENGTH_SHORT).show();
+				} else {
+					Toast.makeText(getContext(), R.string.generateCertFailure, Toast.LENGTH_SHORT).show();
+				}
+				
+				loadingDialog.dismiss();
+			}
+			
+		};
+		File externalStorageDirectory = Environment.getExternalStorageDirectory();
+		File plumbleFolder = new File(externalStorageDirectory, CERTIFICATE_FOLDER);
+		if(!plumbleFolder.exists()) {
+			plumbleFolder.mkdir();
+		}
+		File certificatePath = new File(plumbleFolder, String.format("plumble-%d.p12", (int) (System.currentTimeMillis() / 1000L)));
+		task.execute(certificatePath);
 	}
 	
 	@TargetApi(11)
@@ -93,7 +183,17 @@ public class Preferences extends SherlockPreferenceActivity {
 			super.onCreate(savedInstanceState);
 			
 			addPreferencesFromResource(R.xml.preferences);
-			ListPreference certificatePathPreference = (ListPreference) findPreference(CERTIFICATE_PATH_KEY);
+			
+			final Preference certificateGeneratePreference = findPreference(CERTIFICATE_GENERATE_KEY);
+			final ListPreference certificatePathPreference = (ListPreference) findPreference(CERTIFICATE_PATH_KEY);
+			
+			certificateGeneratePreference.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+				@Override
+				public boolean onPreferenceClick(Preference preference) {
+					generateCertificate(certificatePathPreference);
+					return true;
+				}
+			});
 			
 			// Make sure media is mounted, otherwise do not allow certificate loading.
 			if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {

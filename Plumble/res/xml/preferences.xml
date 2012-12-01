@@ -4,16 +4,17 @@
     <PreferenceCategory android:title="@string/general">
         <CheckBoxPreference android:title="@string/chatNotifications" android:summary="@string/chatNotificationsSum" android:key="chatNotify" android:defaultValue="true"/>
     </PreferenceCategory><PreferenceCategory android:title="@string/authentication" >
-        <ListPreference
+        <Preference android:title="@string/certificateGenerate" android:summary="@string/certificateGenerateSum" android:key="certificateGenerate"/><ListPreference
             android:key="certificatePath"
             android:summary="@string/certificateFileSum"
-            android:title="@string/certificateFile" />
+            android:title="@string/certificateFile"/>
 
         <EditTextPreference
             android:key="certificatePassword"
             android:password="true"
             android:summary="@string/certificatePasswordSum"
             android:title="@string/certificatePassword" />
+        
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/audioInput" >
         <ListPreference

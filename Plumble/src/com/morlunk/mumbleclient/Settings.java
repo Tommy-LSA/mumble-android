@@ -89,6 +89,10 @@ public class Settings {
 		return preferences.getString(PREF_CERT, null);
 	}
 	
+	public void setCertificatePath(String path) {
+		preferences.edit().putString(PREF_CERT, path).commit();
+	}
+	
 	public String getCertificatePassword() {
 		return preferences.getString(PREF_CERT_PASSWORD, "");
 	}
