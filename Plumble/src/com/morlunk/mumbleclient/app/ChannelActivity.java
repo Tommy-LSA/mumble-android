@@ -875,16 +875,13 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 		
 		@Override
 		public void onCurrentChannelChanged() throws RemoteException {
+			Channel userChannel = mService.getCurrentChannel();
+			setChannel(userChannel);
+			getSupportActionBar().setSelectedNavigationItem(mService.getSortedChannelList().indexOf(userChannel));
 		}
 
 		@Override
 		public void onCurrentUserUpdated() throws RemoteException {
-			// Update user's channel if appropriate
-			Channel userChannel = mService.getCurrentChannel();
-			if(!userChannel.equals(visibleChannel)) {
-				setChannel(userChannel);
-				getSupportActionBar().setSelectedNavigationItem(mService.getSortedChannelList().indexOf(userChannel));
-			}
 		}
 
 		@Override
