@@ -660,6 +660,9 @@ public class MumbleService extends Service {
 	public void onCreate() {
 		super.onCreate();
 		
+		// Make sure our notification is gone.
+		hideNotification();
+		
 		settings = new Settings(this);
 		
 		Log.i(Globals.LOG_TAG, "MumbleService: Created");
@@ -667,7 +670,7 @@ public class MumbleService extends Service {
 		
 		currentService = this;
 	}
-
+	
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
@@ -892,11 +895,9 @@ public class MumbleService extends Service {
 	}
 
 	void hideNotification() {
-		if (mStatusNotification != null) {
-			NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
-			notificationManager.cancel(STATUS_NOTIFICATION_ID);
-			mStatusNotification = null;
-		}
+		// Clear notifications
+		NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		nm.cancelAll();
 	}
 
 	void showNotification() {

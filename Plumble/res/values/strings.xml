@@ -68,6 +68,7 @@
     <string name="generateCertSuccess">Your certificate has been set and saved as %s!</string>
     <string name="generateCertFailure">Failed to generate certificate.</string>
     <string name="generateCertProgress">Generating certificate...</string>
+    <string name="search">Search</string>
     
 
 </resources>
