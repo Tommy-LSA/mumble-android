@@ -569,7 +569,7 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 					
 					@Override
 					protected Void doInBackground(Channel... params) {
-						if(!mService.getCurrentChannel().equals(params[0]))
+						if(!visibleChannel.equals(params[0]))
 							mService.joinChannel(params[0].id);
 						
 						return null;
