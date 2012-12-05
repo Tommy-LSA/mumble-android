@@ -736,10 +736,7 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 		builder.show();
 	}
 	
-	public void setVisibleChannel(Channel channel) {
-		if(channel == visibleChannel) 
-			return;
-		
+	public void setVisibleChannel(Channel channel) {		
 		this.visibleChannel = channel;
 		listFragment.updateChannel();
 		
