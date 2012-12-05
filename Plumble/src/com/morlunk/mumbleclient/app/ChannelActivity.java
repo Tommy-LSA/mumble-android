@@ -521,23 +521,11 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 					
 					@Override
 					protected Void doInBackground(Channel... params) {
-						mService.joinChannel(params[0].id);
+						if(!mService.getCurrentChannel().equals(params[0]))
+							mService.joinChannel(params[0].id);
 						return null;
 					}
 					
-					/* (non-Javadoc)
-					 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-					 */
-					@Override
-					protected void onPostExecute(Void result) {
-						super.onPostExecute(result);
-						setChannel(channelAdapter.getItem(itemPosition));
-						
-						int channelId = channelAdapter.getItem(itemPosition).id;
-						if(settings.getLastChannel(mService.getServerId()) != channelId) {
-							settings.setLastChannel(mService.getServerId(), channelAdapter.getItem(itemPosition).id); // Cache the last channel
-						}
-					}
 				}.execute(channelAdapter.getItem(itemPosition));
 				return true;
 			}
@@ -546,28 +534,28 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 		// If we don't have visible channel selected, get the last stored channel from preferences.
 		// Setting channel also synchronizes the UI so we don't need to do it manually.
 		if (visibleChannel == null) {
-			
 			int lastChannelId = settings.getLastChannel(mService.getServerId());
 			
-			Channel lastChannel = null;
-			for(Channel channel : channelList) {
-				if(channel.id == lastChannelId) {
-					lastChannel = channel;
-				}
-			}
+			Channel lastChannel = findChannelById(lastChannelId);
 			
 			if(lastChannel != null) {
-				getSupportActionBar().setSelectedNavigationItem(
-						channelList.indexOf(lastChannel));
+				new AsyncTask<Channel, Void, Void>() {
+					
+					@Override
+					protected Void doInBackground(Channel... params) {
+						mService.joinChannel(params[0].id);
+						return null;
+					}
+					
+				}.execute(lastChannel);
 			} else {
-				setChannel(mService.getCurrentChannel());
+				setVisibleChannel(mService.getCurrentChannel());
 			}
 		} else {
 			// Re-select visible channel. Necessary after a rotation is
 			// performed or the app is suspended.
 			if (channelList.contains(visibleChannel)) {
-				getSupportActionBar().setSelectedNavigationItem(
-						channelList.indexOf(visibleChannel));
+				setVisibleChannel(visibleChannel);
 			}
 		}
 		
@@ -736,13 +724,6 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 							mService.joinChannel(params[0].id);
 							return null;
 						}
-						
-						@Override
-						protected void onPostExecute(Void result) {
-							super.onPostExecute(result);
-							setChannel(channel);
-							getSupportActionBar().setSelectedNavigationItem(mService.getSortedChannelList().indexOf(channel));
-						}
 					}.execute(channel);
 				}
 			});
@@ -755,12 +736,24 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 		builder.show();
 	}
 	
-	public void setChannel(Channel channel) {
+	public void setVisibleChannel(Channel channel) {
+		if(channel == visibleChannel) 
+			return;
+		
 		this.visibleChannel = channel;
 		listFragment.updateChannel();
+		
+		// Update action bar
+		getSupportActionBar().setSelectedNavigationItem(mService.getSortedChannelList().indexOf(channel));
         
         // Update favourites icon
 		updateFavouriteMenuItem();
+		
+		// Update last channel in settings
+		int channelId = channel.id;
+		if(settings.getLastChannel(mService.getServerId()) != channelId) {
+			settings.setLastChannel(mService.getServerId(), channel.id); // Cache the last channel
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -876,8 +869,9 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 		@Override
 		public void onCurrentChannelChanged() throws RemoteException {
 			Channel userChannel = mService.getCurrentChannel();
-			setChannel(userChannel);
-			getSupportActionBar().setSelectedNavigationItem(mService.getSortedChannelList().indexOf(userChannel));
+			if(userChannel != visibleChannel) {
+				setVisibleChannel(userChannel);
+			}
 		}
 
 		@Override
