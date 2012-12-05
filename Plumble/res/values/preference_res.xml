@@ -64,8 +64,8 @@
 	<string name="appearance">Appearance</string>
 	<string name="themeSum">The theme of the app\'s channel view.</string>
 	<string name="theme">Theme</string>
-	<string name="advancedAudio">Advanced Audio</string>
-	<string name="audioQuality">Audio quality</string>
+	<string name="advancedAudio">Advanced</string>
+	<string name="audioQuality">Preferred audio quality</string>
 	<string name="noCert">No Certificate</string>
 	<string name="rowheight">Channel Row Height</string>
 	<string name="rowheightSum">The height of a row in channel selection.</string>

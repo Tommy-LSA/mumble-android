@@ -4,12 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.mumble.MumbleProto.PermissionDenied.DenyType;
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
 import android.database.DataSetObserver;
 import android.graphics.Color;
 import android.hardware.Sensor;
@@ -17,7 +20,10 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.support.v4.app.FragmentManager;
@@ -41,6 +47,7 @@ import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.SearchView;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -58,6 +65,7 @@ import com.morlunk.mumbleclient.app.db.DbAdapter;
 import com.morlunk.mumbleclient.app.db.Favourite;
 import com.morlunk.mumbleclient.service.BaseServiceObserver;
 import com.morlunk.mumbleclient.service.IServiceObserver;
+import com.morlunk.mumbleclient.service.MumbleService;
 import com.morlunk.mumbleclient.service.model.Channel;
 import com.morlunk.mumbleclient.service.model.Message;
 import com.morlunk.mumbleclient.service.model.User;
@@ -99,6 +107,7 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 
     // Favourites
     private List<Favourite> favourites;
+    private MenuItem searchItem;
     private MenuItem favouritesItem;
     private MenuItem mutedButton;
     private MenuItem deafenedButton;
@@ -342,9 +351,21 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
         	mService.setActivityVisible(false);
     }
     
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB) 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getSupportMenuInflater().inflate(R.menu.activity_channel, menu);      
+        getSupportMenuInflater().inflate(R.menu.activity_channel, menu);
+        
+        searchItem = menu.findItem(R.id.menu_search);
+        
+        if(VERSION.SDK_INT >= 11) {
+        	// Only Honeycomb+ supports the notion of 'searchable info' and the SearchView. We should add search support for eclair+ in a later release. FIXME
+            SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+            SearchView searchView = (SearchView) menu.findItem(R.id.menu_search).getActionView();
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        } else {
+        	searchItem.setVisible(false);
+        }
         
         favouritesItem = menu.findItem(R.id.menu_favorite_button);
         mutedButton = menu.findItem(R.id.menu_mute_button);
@@ -358,6 +379,31 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
         
         return true;
     }
+    
+	@Override
+    protected void onNewIntent(Intent intent) {
+    	super.onNewIntent(intent);
+    	
+		// Join channel selected in search suggestions if present
+		if(intent != null &&
+				intent.getAction() != null &&
+				intent.getAction().equals(Intent.ACTION_SEARCH)) {
+			Uri data = intent.getData();
+			int channelId = Integer.parseInt(data.getLastPathSegment());
+			
+			new AsyncTask<Integer, Void, Void>() {
+				@Override
+				protected Void doInBackground(Integer... params) {
+					mService.joinChannel(params[0]);
+					return null;
+				}
+			}.execute(channelId);
+			
+            if(searchItem != null)
+            	searchItem.collapseActionView();
+		}
+    }
+    
     
     /**
      * Updates the icon and title of the 'favourites' menu icon to represent the channel's favourited status.
@@ -418,6 +464,8 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 		case R.id.menu_view_favorites_button:
 			showFavouritesDialog();
 			return true;
+		case R.id.menu_search:
+			return false;
 		case R.id.menu_access_tokens_button:
 			TokenDialogFragment dialogFragment = TokenDialogFragment.newInstance();
 			//if(mViewPager != null) {
@@ -523,6 +571,7 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 					protected Void doInBackground(Channel... params) {
 						if(!mService.getCurrentChannel().equals(params[0]))
 							mService.joinChannel(params[0].id);
+						
 						return null;
 					}
 					
@@ -757,7 +806,7 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 		listFragment.updateChannel();
 		
 		// Update action bar
-		getSupportActionBar().setSelectedNavigationItem(mService.getSortedChannelList().indexOf(channel));
+		getSupportActionBar().setSelectedNavigationItem(channelAdapter.availableChannels.indexOf(channel));
         
         // Update favourites icon
 		updateFavouriteMenuItem();

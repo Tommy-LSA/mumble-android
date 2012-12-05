@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.morlunk.mumbleclient"
     android:installLocation="auto"
-    android:versionCode="23"
-    android:versionName="1.4.3" >
+    android:versionCode="24"
+    android:versionName="1.4.4" >
 
     <uses-sdk
         android:minSdkVersion="7"
@@ -28,7 +28,14 @@
             </intent-filter>
         </activity>
         <activity android:name=".app.ServerInfo" android:parentActivityName=".app.ServerList"/>
-        <activity android:name=".app.ChannelActivity" android:launchMode="singleInstance" />
+		<provider android:name=".app.ChannelSearchProvider" android:authorities="com.morlunk.mumbleclient.app.ChannelSearchProvider" android:exported="false"></provider>
+        <activity android:name=".app.ChannelActivity" android:launchMode="singleInstance">
+            <intent-filter>
+            	<action android:name="android.intent.action.SEARCH" />
+        	</intent-filter>
+        	<meta-data android:name="android.app.searchable"
+                  	 android:resource="@xml/searchable"/>
+        </activity>
         <activity android:name=".app.Preferences" android:parentActivityName=".app.ServerList"/>
 
         <service
