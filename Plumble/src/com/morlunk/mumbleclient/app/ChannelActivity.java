@@ -655,9 +655,7 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 		}
 	}
 	
-	private void toggleFavourite(Channel channel) {
-		DbAdapter dbAdapter = new DbAdapter(this);
-		dbAdapter.open();
+	private void toggleFavourite(final Channel channel) {
 		
 		Favourite currentFavourite = null;
 		
@@ -667,18 +665,36 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 			}
 		}
 		
-		if(currentFavourite == null) {
-			dbAdapter.createFavourite(mService.getServerId(), channel.id);
-			Toast.makeText(this, R.string.favoriteAdded, Toast.LENGTH_SHORT).show();
-		} else {
-			dbAdapter.deleteFavourite(currentFavourite.getId());
-			Toast.makeText(this, R.string.favoriteRemoved, Toast.LENGTH_SHORT).show();
-		}
+		final Favourite channelFavourite = currentFavourite;
 		
-		dbAdapter.close();
-		
-		favourites = loadFavourites();
-		updateFavouriteMenuItem();
+		new AsyncTask<Void, Void, Void>() {
+
+			@Override
+			protected Void doInBackground(Void... params) {
+				DbAdapter dbAdapter = new DbAdapter(ChannelActivity.this);
+				dbAdapter.open();
+
+				if (channelFavourite == null)
+					dbAdapter.createFavourite(mService.getServerId(),
+							channel.id);
+				else
+					dbAdapter.deleteFavourite(channelFavourite.getId());
+
+				dbAdapter.close();
+				return null;
+			}
+
+			protected void onPostExecute(Void result) {
+				Toast.makeText(
+						ChannelActivity.this,
+						channelFavourite == null ? R.string.favoriteAdded
+								: R.string.favoriteRemoved, Toast.LENGTH_SHORT)
+						.show();
+
+				favourites = loadFavourites();
+				updateFavouriteMenuItem();
+			};
+		}.execute();
 	}
 	
 	public List<Favourite> loadFavourites() {
