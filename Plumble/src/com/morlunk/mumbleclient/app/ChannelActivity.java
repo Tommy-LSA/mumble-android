@@ -889,6 +889,7 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 
 		@Override
 		public void onCurrentUserUpdated() throws RemoteException {
+			updateMuteDeafenMenuItems(mService.getCurrentUser().muted, mService.getCurrentUser().deafened);
 		}
 
 		@Override
