@@ -453,7 +453,9 @@ public class MumbleProtocol {
 
 		// Rewind the packet. Otherwise consumers are confusing to implement.
 		pds.rewind();
-		ao.addFrameToBuffer(u, pds, flags);
+		
+		if(ao != null)
+			ao.addFrameToBuffer(u, pds, flags);
 	}
 
 	private void stopThreads() {
