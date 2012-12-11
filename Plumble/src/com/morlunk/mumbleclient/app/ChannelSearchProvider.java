@@ -2,17 +2,15 @@ package com.morlunk.mumbleclient.app;
 
 import java.util.List;
 
-import com.morlunk.mumbleclient.Globals;
-import com.morlunk.mumbleclient.service.MumbleService;
-import com.morlunk.mumbleclient.service.model.Channel;
-
 import android.app.SearchManager;
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
-import android.util.Log;
+
+import com.morlunk.mumbleclient.service.MumbleService;
+import com.morlunk.mumbleclient.service.model.Channel;
 
 public class ChannelSearchProvider extends ContentProvider {
 

@@ -1,9 +1,11 @@
 package com.morlunk.mumbleclient.app;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.mumble.MumbleProto.PermissionDenied.DenyType;
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -23,7 +25,9 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.PowerManager;
 import android.os.Build.VERSION;
+import android.os.PowerManager.WakeLock;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.support.v4.app.FragmentManager;
@@ -65,7 +69,6 @@ import com.morlunk.mumbleclient.app.db.DbAdapter;
 import com.morlunk.mumbleclient.app.db.Favourite;
 import com.morlunk.mumbleclient.service.BaseServiceObserver;
 import com.morlunk.mumbleclient.service.IServiceObserver;
-import com.morlunk.mumbleclient.service.MumbleService;
 import com.morlunk.mumbleclient.service.model.Channel;
 import com.morlunk.mumbleclient.service.model.Message;
 import com.morlunk.mumbleclient.service.model.User;
@@ -87,10 +90,11 @@ interface TokenDialogFragmentListener {
 }
 
 
-public class ChannelActivity extends ConnectedActivity implements ChannelProvider, TokenDialogFragmentListener, SensorEventListener {
+public class ChannelActivity extends ConnectedActivity implements ChannelProvider, TokenDialogFragmentListener {
 
 	public static final String JOIN_CHANNEL = "join_channel";
 	public static final String SAVED_STATE_VISIBLE_CHANNEL = "visible_channel";
+	public static final Integer PROXIMITY_SCREEN_OFF_WAKE_LOCK = 32; // Undocumented feature! This will allow us to enable the phone proximity sensor.
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide fragments for each of the
@@ -125,8 +129,7 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 	private ChannelChatFragment chatFragment;
 	
 	// Proximity sensor
-	private SensorManager sensorManager;
-	private Sensor proximitySensor;
+	private WakeLock proximityLock;
 	
 	private Settings settings;
 	
@@ -168,9 +171,12 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
         	setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
         	
         	// Set up proximity sensor
-        	sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        	proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+        	PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        	proximityLock = powerManager.newWakeLock(PROXIMITY_SCREEN_OFF_WAKE_LOCK, Globals.LOG_TAG);
         }
+        
+        AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+        audioManager.setMode(AudioManager.MODE_IN_CALL);
 
         // Set up the action bar.
         final ActionBar actionBar = getSupportActionBar();
@@ -328,7 +334,8 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
     	super.onResume();
     	
     	if(settings.getCallMode() == PlumbleCallMode.VOICE_CALL)
-    		sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_UI);
+    		setProximityEnabled(true);
+    		
     	
         if(mService != null && mService.getCurrentUser() != null)
         	updateMuteDeafenMenuItems(mService.isMuted(), mService.isDeafened());
@@ -345,7 +352,7 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
     	super.onPause();
     	
     	if(settings.getCallMode() == PlumbleCallMode.VOICE_CALL)
-    		sensorManager.unregisterListener(this);
+    		setProximityEnabled(false);
     	
     	if(mService != null)
         	mService.setActivityVisible(false);
@@ -746,6 +753,24 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 		}.execute();
 	}
 	
+	/**
+	 * @see http://stackoverflow.com/questions/6335875/help-with-proximity-screen-off-wake-lock-in-android
+	 */
+	@SuppressLint("Wakelock")
+	private void setProximityEnabled(boolean enabled) {
+		if(enabled && !proximityLock.isHeld()) {
+			proximityLock.acquire();
+		} else if(!enabled && proximityLock.isHeld()) {
+			try {
+				Class<?> lockClass = proximityLock.getClass();
+				Method release = lockClass.getMethod("release", int.class);
+				release.invoke(proximityLock, 1);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	public List<Favourite> loadFavourites() {
         DbAdapter dbAdapter = new DbAdapter(this);
         dbAdapter.open();
@@ -863,21 +888,6 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 	 */
 	private void permissionDenied(String reason, DenyType denyType) {
 		Toast.makeText(getApplicationContext(), R.string.permDenied, Toast.LENGTH_SHORT).show();
-	}
-	
-	// Voice call mode sensors
-	
-	@Override
-	public void onAccuracyChanged(Sensor sensor, int accuracy) {
-		// TODO Auto-generated method stub
-	}
-	
-	@Override
-	public void onSensorChanged(SensorEvent event) {
-		if(event.sensor == proximitySensor) {
-			float distance = event.values[0];
-			setVisible(event.sensor.getMaximumRange() == distance);
-		}
 	}
 	
     /**
