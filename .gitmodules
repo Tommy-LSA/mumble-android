@@ -7,3 +7,6 @@
 [submodule "libs/ActionBarSherlock"]
 	path = libs/ActionBarSherlock
 	url = git://github.com/JakeWharton/ActionBarSherlock.git/
+[submodule "jni/opus"]
+	path = jni/opus
+	url = https://git.xiph.org/opus.git/
