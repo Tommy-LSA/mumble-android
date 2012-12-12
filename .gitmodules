@@ -1,9 +1,9 @@
-[submodule "ActionBarSherlock"]
-	path = ActionBarSherlock
-	url = git://github.com/JakeWharton/ActionBarSherlock.git/
 [submodule "jni/celt"]
-	path = Plumble/jni/celt
+	path = jni/celt
 	url = git://git.xiph.org/celt.git/
 [submodule "jni/speex"]
-	path = Plumble/jni/speex
+	path = jni/speex
 	url = git://git.xiph.org/speex.git/
+[submodule "libs/ActionBarSherlock"]
+	path = libs/ActionBarSherlock
+	url = git://github.com/JakeWharton/ActionBarSherlock.git/
