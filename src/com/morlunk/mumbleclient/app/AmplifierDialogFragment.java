@@ -1,6 +1,7 @@
 package com.morlunk.mumbleclient.app;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
@@ -12,6 +13,7 @@ import android.widget.TextView;
 
 import com.morlunk.mumbleclient.R;
 import com.morlunk.mumbleclient.Settings;
+import com.morlunk.mumbleclient.service.MumbleService;
 
 public class AmplifierDialogFragment extends DialogFragment implements OnSeekBarChangeListener {
 	
@@ -57,7 +59,16 @@ public class AmplifierDialogFragment extends DialogFragment implements OnSeekBar
 			
 			settings.setAmplitudeBoostMultiplier(multiplier);
 			recordingMultiplierText.setText((int)(multiplier*100)+"%");
+			
+			// TODO maybe move this to onDismiss?
+			if(MumbleService.getCurrentService() != null)
+				MumbleService.getCurrentService().updateSettings();
 		}
+	}
+	
+	@Override
+	public void onDismiss(DialogInterface dialog) {
+		super.onDismiss(dialog);
 	}
 
 	@Override

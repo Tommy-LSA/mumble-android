@@ -45,6 +45,10 @@ import com.morlunk.mumbleclient.service.model.User;
  */
 public class MumbleService extends Service {
 	
+	public interface SettingsListener {
+		public void settingsUpdated(Settings settings);
+	}
+	
 	public class LocalBinder extends Binder {
 		public MumbleService getService() {
 			return MumbleService.this;
@@ -481,10 +485,12 @@ public class MumbleService extends Service {
 	private MumbleProtocol mProtocol;
 
 	private Settings settings;
+	private List<SettingsListener> settingsListeners;
 	private int serverId;
 	
 	private Thread mClientThread;
-	private Thread mRecordThread;
+	private RecordThread mRecordThread;
+	private Thread mRecordThreadInstance;
 
 	private Notification mStatusNotification;
 	private NotificationCompat.Builder mStatusNotificationBuilder;
@@ -631,7 +637,7 @@ public class MumbleService extends Service {
 	}
 
 	public boolean isRecording() {
-		return (mRecordThread != null);
+		return (mRecordThreadInstance != null);
 	}
 	
 	public boolean isDeafened() {
@@ -664,6 +670,7 @@ public class MumbleService extends Service {
 		hideNotification();
 		
 		settings = new Settings(this);
+		settingsListeners = new ArrayList<SettingsListener>();
 		
 		Log.i(Globals.LOG_TAG, "MumbleService: Created");
 		serviceState = CONNECTION_STATE_DISCONNECTED;
@@ -725,8 +732,9 @@ public class MumbleService extends Service {
 		if (state) {
 			// start record
 			// TODO check initialized
-			mRecordThread = new Thread(new RecordThread(this, settings.isVoiceActivity()), "record");
-			mRecordThread.start();
+			mRecordThread = new RecordThread(this, settings.isVoiceActivity());
+			mRecordThreadInstance = new Thread(mRecordThread, "record");
+			mRecordThreadInstance.start();
 			
 			if(settings.isPushToTalk()) {
 				// Continuously talk if using PTT.
@@ -734,14 +742,34 @@ public class MumbleService extends Service {
 						mProtocol.currentUser,
 						AudioOutputHost.STATE_TALKING);
 			}
-		} else if (mRecordThread != null && !state) {
+		} else if (mRecordThreadInstance != null && !state) {
 			// stop record
-			mRecordThread.interrupt();
+			mRecordThreadInstance.interrupt();
+			mRecordThreadInstance = null;
 			mRecordThread = null;
 			mAudioHost.setTalkState(
 				mProtocol.currentUser,
 				AudioOutputHost.STATE_PASSIVE);
 		}
+	}
+	
+	/**
+	 * Updates all registered settings listeners within the service.
+	 */
+	public void updateSettings() {
+		for(SettingsListener listener : settingsListeners) {
+			listener.settingsUpdated(settings);
+		}
+	}
+	
+	public void registerSettingsListener(SettingsListener settingsListener) {
+		if(!settingsListeners.contains(settingsListener))
+			settingsListeners.add(settingsListener);
+	}
+	
+	public void unregisterSettingsListener(SettingsListener settingsListener) {
+		if(settingsListeners.contains(settingsListener))
+			settingsListeners.remove(settingsListener);
 	}
 	
 	public void setMuted(final boolean state) {
