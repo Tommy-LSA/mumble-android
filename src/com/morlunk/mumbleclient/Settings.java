@@ -24,6 +24,14 @@ public class Settings {
 	public static final String PREF_PUSH_KEY = "talkKey";
 	public static final Integer DEFAULT_PUSH_KEY = -1;
 	
+	public static final String PREF_HOT_CORNER_KEY = "hotCorner";
+	public static final String ARRAY_HOT_CORNER_NONE = "none";
+	public static final String ARRAY_HOT_CORNER_TOP_LEFT = "topLeft";
+	public static final String ARRAY_HOT_CORNER_BOTTOM_LEFT = "bottomLeft";
+	public static final String ARRAY_HOT_CORNER_TOP_RIGHT = "topRight";
+	public static final String ARRAY_HOT_CORNER_BOTTOM_RIGHT = "bottomRight";
+	public static final String DEFAULT_HOT_CORNER = ARRAY_HOT_CORNER_NONE;
+	
 	public static final String PREF_QUALITY = "quality";
 	public static final String DEFAULT_QUALITY = "60000";
 	
@@ -89,6 +97,10 @@ public class Settings {
 	
 	public int getPushToTalkKey() {
 		return preferences.getInt(PREF_PUSH_KEY, DEFAULT_PUSH_KEY);
+	}
+	
+	public String getHotCorner() {
+		return preferences.getString(PREF_HOT_CORNER_KEY, DEFAULT_HOT_CORNER);
 	}
 	
 	public String getTheme() {

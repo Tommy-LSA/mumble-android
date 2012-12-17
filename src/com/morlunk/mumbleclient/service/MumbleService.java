@@ -16,12 +16,20 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PixelFormat;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.WindowManager;
 
 import com.google.protobuf.Message.Builder;
 import com.morlunk.mumbleclient.Globals;
@@ -164,9 +172,15 @@ public class MumbleService extends Service {
 
 					// Handle foreground stuff
 					if (state == MumbleConnectionHost.STATE_CONNECTED) {
-						showNotification();					
+						// Create PTT overlay
+						if(settings.isPushToTalk() &&
+								!settings.getHotCorner().equals(Settings.ARRAY_HOT_CORNER_NONE)) {
+							createPTTOverlay();
+						}
+						showNotification();	
 						updateConnectionState();						
 					} else if (state == MumbleConnectionHost.STATE_DISCONNECTED) {
+						dismissPTTOverlay();
 						doConnectionDisconnect();
 					} else {
 						updateConnectionState();
@@ -494,6 +508,7 @@ public class MumbleService extends Service {
 
 	private Notification mStatusNotification;
 	private NotificationCompat.Builder mStatusNotificationBuilder;
+	private View overlayView; // Hot corner overlay view
 
 	private final LocalBinder mBinder = new LocalBinder();
 	final Handler handler = new Handler();
@@ -993,6 +1008,63 @@ public class MumbleService extends Service {
 		NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		
 		notificationManager.notify(STATUS_NOTIFICATION_ID, notificationCompat);
+	}
+	
+	/**
+	 * Creates a system overlay that allows the user to touch the corner of the screen to push to talk.
+	 */
+	public void createPTTOverlay() {
+		WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+				WindowManager.LayoutParams.WRAP_CONTENT,
+				WindowManager.LayoutParams.WRAP_CONTENT,
+				WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
+				WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+						| WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+						| WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+				PixelFormat.TRANSLUCENT);
+		String hotCorner = settings.getHotCorner();
+		if(hotCorner.equals(Settings.ARRAY_HOT_CORNER_TOP_LEFT)) {
+			params.gravity = Gravity.LEFT | Gravity.TOP;
+		} else if(hotCorner.equals(Settings.ARRAY_HOT_CORNER_BOTTOM_LEFT)) {
+			params.gravity = Gravity.LEFT | Gravity.BOTTOM;
+		} else if(hotCorner.equals(Settings.ARRAY_HOT_CORNER_TOP_RIGHT)) {
+			params.gravity = Gravity.RIGHT | Gravity.TOP;
+		} else if(hotCorner.equals(Settings.ARRAY_HOT_CORNER_BOTTOM_RIGHT)) {
+			params.gravity = Gravity.RIGHT | Gravity.BOTTOM;
+		}
+		WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
+		LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+		overlayView = inflater.inflate(R.layout.overlay, null);
+		final Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+		overlayView.setOnTouchListener(new View.OnTouchListener() {
+
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				if(event.getAction() == MotionEvent.ACTION_DOWN) {
+					setRecording(true);
+					// Vibrate to provide haptic feedback
+					vibrator.vibrate(10);
+					overlayView.setBackgroundColor(Color.RED);
+				} else if(event.getAction() == MotionEvent.ACTION_UP) {
+					setRecording(false);
+					overlayView.setBackgroundColor(0);
+				}
+				return false;
+			}
+		});
+
+		// Add layout to window manager
+		wm.addView(overlayView, params);
+	}
+	
+	/**
+	 * Removes the system overlay for PTT.
+	 */
+	public void dismissPTTOverlay() {
+		if(overlayView != null) {
+			WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
+			wm.removeView(overlayView);
+		}
 	}
 
 	void updateConnectionState() {
