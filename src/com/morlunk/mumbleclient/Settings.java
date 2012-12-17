@@ -27,6 +27,9 @@ public class Settings {
 	public static final String PREF_QUALITY = "quality";
 	public static final String DEFAULT_QUALITY = "60000";
 	
+	public static final String PREF_AMPLITUDE_BOOST = "amplitudeBoost";
+	public static final Float DEFAULT_AMPLITUDE_BOOST = 0f;
+	
 	public static final String PREF_CHAT_NOTIFY = "chatNotify";
 	public static final Boolean DEFAULT_CHAT_NOTIFY = true;
 	
@@ -72,6 +75,13 @@ public class Settings {
 		return Integer.parseInt(preferences.getString(Settings.PREF_QUALITY, DEFAULT_QUALITY));
 	}
 	
+	public float getAmplitudeBoostMultiplier() {
+		return preferences.getFloat(Settings.PREF_AMPLITUDE_BOOST, DEFAULT_AMPLITUDE_BOOST);
+	}
+	
+	public void setAmplitudeBoostMultiplier(Float multiplier) {
+		preferences.edit().putFloat(PREF_AMPLITUDE_BOOST, multiplier).commit();
+	}
 	
 	public int getDetectionThreshold() {
 		return preferences.getInt(PREF_THRESHOLD, DEFAULT_THRESHOLD);

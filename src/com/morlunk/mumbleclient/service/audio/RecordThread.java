@@ -25,6 +25,7 @@ import com.morlunk.mumbleclient.service.PacketDataStream;
  */
 public class RecordThread implements Runnable {
 	
+	private Settings settings;
 	private final int audioQuality;
 	private static int frameSize;
 	private static int recordingSampleRate;
@@ -52,7 +53,7 @@ public class RecordThread implements Runnable {
 		audioQuality = new Settings(mService.getApplicationContext()).getAudioQuality();
 		this.voiceActivity = voiceActivity;
 
-		Settings settings = new Settings(service);
+		settings = new Settings(service);
 		// Get detection threshold
 		detectionThreshold = settings.getDetectionThreshold();
 		callMode = settings.getCallMode();
@@ -159,10 +160,10 @@ public class RecordThread implements Runnable {
 						mService.isConnected() &&
 						mService.getCurrentUser() != null) {
 					long totalAmplitude = 0;
-					for(short s : buffer) {
-						totalAmplitude +=Math.abs(s);
+					for(int x=0;x<out.length;x++) {
+						totalAmplitude +=Math.abs(out[x]);
 					}
-					totalAmplitude /= buffer.length;
+					totalAmplitude /= out.length;
 					
 					if(totalAmplitude >= detectionThreshold) {
 						lastDetection = System.currentTimeMillis();
@@ -179,6 +180,11 @@ public class RecordThread implements Runnable {
 							talkState = AudioOutputHost.STATE_PASSIVE;
 						}
 					}
+				}
+				
+				// Boost amplitude, if applicable
+				for(int x=0;x<out.length;x++) {
+					out[x] += settings.getAmplitudeBoostMultiplier()*out[x];
 				}
 				
 				final int compressedSize = Math.min(audioQuality / (100 * 8),
