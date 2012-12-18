@@ -87,15 +87,16 @@ public class ServerList extends ConnectedListActivity {
 
 			TextView nameText = (TextView) view.findViewById(R.id.server_row_name);
 			TextView userText = (TextView) view.findViewById(R.id.server_row_user);
+			TextView addressText = (TextView) view.findViewById(R.id.server_row_address);
 
 			if(server.getName().equals("")) {
-				nameText.setText(server.getHost() + ":" + server.getPort());
-				userText.setText(server.getUsername());
+				nameText.setText(server.getHost());
 			} else {
 				nameText.setText(server.getName());
-				userText.setText(server.getUsername() + "@" + server.getHost() + ":" +
-								 server.getPort());
 			}
+			
+			userText.setText(server.getUsername());
+			addressText.setText(server.getHost()+":"+server.getPort());
 
 			return view;
 		}
