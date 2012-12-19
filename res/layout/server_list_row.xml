@@ -1,22 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical" >
+    android:orientation="vertical"
+    tools:ignore="NewApi" >
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/card_background"
         android:orientation="vertical"
-        android:paddingBottom="10dp"
         android:paddingLeft="18dp"
         android:paddingRight="18dp"
         android:paddingTop="10dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/card_background">
+        android:paddingBottom="5dp">
 
         <TextView
             android:id="@+id/server_row_name"
@@ -25,6 +27,8 @@
             android:gravity="left|center_vertical"
             android:paddingBottom="4dp"
             android:text="@string/serverHost"
+            android:textColor="#808080"
+            android:fontFamily="sans-serif-light"
             android:textSize="24sp" >
         </TextView>
 
@@ -44,8 +48,8 @@
                 android:id="@+id/server_row_user"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#808080"
-                android:text="@string/serverUsername" />
+                android:text="@string/serverUsername"
+                android:textColor="#808080" />
         </LinearLayout>
 
         <LinearLayout
@@ -63,9 +67,49 @@
                 android:id="@+id/server_row_address"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#808080"
-                android:text="@string/serverHost" />
+                android:text="@string/serverHost"
+                android:textColor="#808080" />
         </LinearLayout>
+        android:paddingTop="10dp" 
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="8dp"
+            android:background="@color/cardOutline" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+            <Button
+                android:id="@+id/server_row_connect"
+                style="@android:style/Widget.Holo.Light.Button.Borderless.Small"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_toLeftOf="@+id/verticalSeparator"
+                android:text="@string/connect"
+                android:textColor="@color/abs__holo_blue_light"
+                android:textSize="14sp" />
+
+            <View
+                android:id="@+id/verticalSeparator"
+                android:layout_width="1dp"
+                android:layout_height="40dp"
+                android:layout_centerHorizontal="true"
+                android:background="@color/cardOutline"
+                android:layout_alignParentTop="true" />
+
+            <Button
+                android:id="@+id/server_row_edit"
+                style="@android:style/Widget.Holo.Light.Button.Borderless.Small"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_toRightOf="@+id/verticalSeparator"
+                android:text="@string/edit"
+                android:textColor="@color/abs__holo_blue_light"
+                android:textSize="14sp" />
+        </RelativeLayout>
+
     </LinearLayout>
 
 </LinearLayout>
