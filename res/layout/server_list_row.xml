@@ -70,7 +70,6 @@
                 android:text="@string/serverHost"
                 android:textColor="#808080" />
         </LinearLayout>
-        android:paddingTop="10dp" 
 
         <View
             android:layout_width="match_parent"
@@ -94,7 +93,7 @@
             <View
                 android:id="@+id/verticalSeparator"
                 android:layout_width="1dp"
-                android:layout_height="40dp"
+                android:layout_height="35dp"
                 android:layout_centerHorizontal="true"
                 android:background="@color/cardOutline"
                 android:layout_alignParentTop="true" />

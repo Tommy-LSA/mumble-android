@@ -1,7 +1,11 @@
 package com.morlunk.mumbleclient.app;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
@@ -84,6 +88,9 @@ public class ServerInfo extends SherlockActivity {
 		case R.id.menu_save_button:
 			save();
 			return true;
+		case R.id.menu_delete_button:
+			createDeleteServerDialog().show();
+			return true;
 		}
 		return super.onMenuItemSelected(featureId, item);
 	}
@@ -94,6 +101,39 @@ public class ServerInfo extends SherlockActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getSupportMenuInflater().inflate(R.menu.activity_server_info, menu);
+		
+		MenuItem deleteButton = menu.findItem(R.id.menu_delete_button);
+		if(getIntent().getLongExtra("serverId", -1) == -1) {
+			deleteButton.setVisible(false);
+		}
+		
 		return true;
+	}
+	
+	private Dialog createDeleteServerDialog() {
+		final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setMessage(R.string.sureDeleteServer).setCancelable(
+			false).setPositiveButton(
+			"Yes",
+			new DialogInterface.OnClickListener() {
+				public void onClick(final DialogInterface dialog, final int id) {
+					DbAdapter dbAdapter = new DbAdapter(ServerInfo.this);
+					long serverId = getIntent().getLongExtra("serverId", -1);
+					dbAdapter.open();
+					dbAdapter.deleteServer(serverId);
+					dbAdapter.close();
+					Toast.makeText(
+						ServerInfo.this,
+						R.string.server_deleted,
+						Toast.LENGTH_SHORT).show();
+					finish();
+				}
+			}).setNegativeButton("No", new DialogInterface.OnClickListener() {
+			public void onClick(final DialogInterface dialog, final int id) {
+				dialog.cancel();
+			}
+		});
+
+		return builder.create();
 	}
 }

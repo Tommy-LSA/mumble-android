@@ -75,6 +75,7 @@
     <string name="recordingVolume">Recording Volume Boost</string>
     <string name="connect">Connect</string>
     <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
     
 
 </resources>
