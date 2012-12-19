@@ -1061,9 +1061,14 @@ public class MumbleService extends Service {
 	 * Removes the system overlay for PTT.
 	 */
 	public void dismissPTTOverlay() {
+		WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
 		if(overlayView != null) {
-			WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
-			wm.removeView(overlayView);
+			try {
+				wm.removeView(overlayView);
+			} catch (Exception e) {
+				// We do a catchall here because removing a view from a WindowManager can be unreliable.
+				// http://stackoverflow.com/questions/6515004/keeping-track-of-view-added-to-windowmanager-no-findviewbyid-function
+			}
 		}
 	}
 
