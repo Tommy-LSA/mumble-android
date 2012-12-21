@@ -114,12 +114,12 @@ public class ConnectedActivity extends SherlockFragmentActivity {
 
 	protected void onDisconnected() {
 		final Reject reject = mService.getError();
-		final int serverId = mService.getServerId();
+		final Server server = mService.getConnectedServer();
 		
 		if(reject != null) {
 			AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
 			if(reject.getType() == RejectType.WrongServerPW) {		
-				// Allow password entry	
+				// Allow password entry
 				final EditText passwordField = new EditText(this);
 				passwordField.setHint(R.string.serverPassword);
 				alertBuilder.setView(passwordField);
@@ -130,12 +130,13 @@ public class ConnectedActivity extends SherlockFragmentActivity {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						// Update server
+						
 						DbAdapter adapter = new DbAdapter(ConnectedActivity.this);
 						adapter.open();
-						Server server = adapter.fetchServer(serverId);
-						adapter.updateServer(serverId, server.getName(), server.getHost(), server.getPort(), server.getUsername(), passwordField.getText().toString());
+						adapter.updateServer(server.getId(), server.getName(), server.getHost(), server.getPort(), server.getUsername(), passwordField.getText().toString());
+						Server updatedServer = adapter.fetchServer(server.getId()); // Update server object again
 						adapter.close();
-						finish();
+						mService.connectToServer(updatedServer);
 					}
 				});
 				alertBuilder.setOnCancelListener(new OnCancelListener() {

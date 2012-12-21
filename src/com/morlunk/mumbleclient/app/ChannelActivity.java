@@ -591,7 +591,7 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 		// If we don't have visible channel selected, get the last stored channel from preferences.
 		// Setting channel also synchronizes the UI so we don't need to do it manually.
 		if (visibleChannel == null) {
-			int lastChannelId = settings.getLastChannel(mService.getServerId());
+			int lastChannelId = settings.getLastChannel(mService.getConnectedServer().getId());
 			
 			Channel lastChannel = findChannelById(lastChannelId);
 			
@@ -638,7 +638,7 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 			protected Void doInBackground(DbAdapter... params) {
 				DbAdapter adapter = params[0];
 				adapter.open();
-				List<String> tokens = adapter.fetchAllTokens(mService.getServerId());
+				List<String> tokens = adapter.fetchAllTokens(mService.getConnectedServer().getId());
 				adapter.close();
 				mService.sendAccessTokens(tokens);
 				return null;
@@ -732,7 +732,7 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 				dbAdapter.open();
 
 				if (channelFavourite == null)
-					dbAdapter.createFavourite(mService.getServerId(),
+					dbAdapter.createFavourite(mService.getConnectedServer().getId(),
 							channel.id);
 				else
 					dbAdapter.deleteFavourite(channelFavourite.getId());
@@ -775,7 +775,7 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 	public List<Favourite> loadFavourites() {
         DbAdapter dbAdapter = new DbAdapter(this);
         dbAdapter.open();
-        List<Favourite> favouriteResult = dbAdapter.fetchAllFavourites(mService.getServerId());
+        List<Favourite> favouriteResult = dbAdapter.fetchAllFavourites(mService.getConnectedServer().getId());
         dbAdapter.close();
         return favouriteResult;
 	}
@@ -839,8 +839,8 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 		
 		// Update last channel in settings
 		int channelId = channel.id;
-		if(settings.getLastChannel(mService.getServerId()) != channelId) {
-			settings.setLastChannel(mService.getServerId(), channel.id); // Cache the last channel
+		if(settings.getLastChannel(mService.getConnectedServer().getId()) != channelId) {
+			settings.setLastChannel(mService.getConnectedServer().getId(), channel.id); // Cache the last channel
 		}
 	}
 	

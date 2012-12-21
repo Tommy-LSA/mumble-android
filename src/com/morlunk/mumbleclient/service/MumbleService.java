@@ -10,7 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import junit.framework.Assert;
 import net.sf.mumble.MumbleProto.Reject;
 import net.sf.mumble.MumbleProto.UserState;
-import net.sf.mumble.MumbleProto.Reject.RejectType;
 import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -38,6 +37,7 @@ import com.morlunk.mumbleclient.Globals;
 import com.morlunk.mumbleclient.R;
 import com.morlunk.mumbleclient.Settings;
 import com.morlunk.mumbleclient.app.ChannelActivity;
+import com.morlunk.mumbleclient.app.db.Server;
 import com.morlunk.mumbleclient.service.MumbleProtocol.MessageType;
 import com.morlunk.mumbleclient.service.audio.AudioOutputHost;
 import com.morlunk.mumbleclient.service.audio.RecordThread;
@@ -485,12 +485,7 @@ public class MumbleService extends Service {
 
 	public static final String EXTRA_MESSAGE = "mumbleclient.extra.MESSAGE";
 	public static final String EXTRA_CONNECTION_STATE = "mumbleclient.extra.CONNECTION_STATE";
-	public static final String EXTRA_HOST = "mumbleclient.extra.HOST";
-	public static final String EXTRA_PORT = "mumbleclient.extra.PORT";
-	public static final String EXTRA_USERNAME = "mumbleclient.extra.USERNAME";
-	public static final String EXTRA_PASSWORD = "mumbleclient.extra.PASSWORD";
-	public static final String EXTRA_USER = "mumbleclient.extra.USER";
-	public static final String EXTRA_SERVER_ID = "mumbleclient.extra.SERVER_ID";
+	public static final String EXTRA_SERVER = "mumbleclient.extra.SERVER";
 	
 	public static final Integer STATUS_NOTIFICATION_ID = 1;
 	
@@ -501,7 +496,7 @@ public class MumbleService extends Service {
 
 	private Settings settings;
 	private List<SettingsListener> settingsListeners;
-	private int serverId;
+	private Server connectedServer;
 	
 	private Thread mClientThread;
 	private RecordThread mRecordThread;
@@ -543,8 +538,8 @@ public class MumbleService extends Service {
 		return currentService;
 	}
 	
-	public int getServerId() {
-		return serverId;
+	public Server getConnectedServer() {
+		return connectedServer;
 	}
 
 	public boolean canSpeak() {
@@ -555,6 +550,7 @@ public class MumbleService extends Service {
 		// Call disconnect on the connection.
 		// It'll notify us with DISCONNECTED when it's done.
 		this.setRecording(false);
+		connectedServer = null;
 		if (mClient != null) {
 			mClient.disconnect();
 		}
@@ -851,19 +847,20 @@ public class MumbleService extends Service {
 
 		Log.i(Globals.LOG_TAG, "MumbleService: Starting service");
 		
-		this.serverId = intent.getIntExtra(EXTRA_SERVER_ID, -1);
-		final String host = intent.getStringExtra(EXTRA_HOST);
-		final int port = intent.getIntExtra(EXTRA_PORT, -1);
-		final String username = intent.getStringExtra(EXTRA_USERNAME);
-		final String password = intent.getStringExtra(EXTRA_PASSWORD);
+		Server server = intent.getParcelableExtra(MumbleService.EXTRA_SERVER);
+		connectToServer(server);
+		
+		return START_NOT_STICKY;
+	}
+	
+	/**
+	 * Connects to the passed 'Server' object.
+	 */
+	public void connectToServer(Server server) {
+		this.connectedServer = server;
+		
 		final String certificatePath = settings.getCertificatePath();
 		final String certificatePassword = settings.getCertificatePassword();
-		
-		if (mClient != null &&
-			state != MumbleConnectionHost.STATE_DISCONNECTED &&
-			mClient.isSameServer(host, port, username, password)) {
-			return START_NOT_STICKY;
-		}
 
 		doConnectionDisconnect();
 
@@ -873,10 +870,10 @@ public class MumbleService extends Service {
 
 		mClient = new MumbleConnection(
 			mConnectionHost,
-			host,
-			port,
-			username,
-			password,
+			connectedServer.getHost(),
+			connectedServer.getPort(),
+			connectedServer.getUsername(),
+			connectedServer.getPassword(),
 			certificatePath,
 			certificatePassword,
 			settings.isTcpForced());
@@ -888,15 +885,6 @@ public class MumbleService extends Service {
 			getApplicationContext());
 
 		mClientThread = mClient.start(mProtocol);
-		
-		return START_NOT_STICKY;
-	}
-	
-	/**
-	 * Reconnects to the active server.
-	 */
-	public void reconnect() {
-		doConnectionDisconnect();
 	}
 
 	void doConnectionDisconnect() {

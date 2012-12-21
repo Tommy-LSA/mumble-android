@@ -234,15 +234,10 @@ public class ServerList extends ConnectedListActivity implements ServerInfoListe
 		adapter.close();
 
 		registerConnectionReceiver();
-
-		// TODO make 'Server' parcelable and send that instead
+		
 		final Intent connectionIntent = new Intent(this, MumbleService.class);
 		connectionIntent.setAction(MumbleService.ACTION_CONNECT);
-		connectionIntent.putExtra(MumbleService.EXTRA_SERVER_ID, server.getId());
-		connectionIntent.putExtra(MumbleService.EXTRA_HOST, server.getHost());
-		connectionIntent.putExtra(MumbleService.EXTRA_PORT, server.getPort());
-		connectionIntent.putExtra(MumbleService.EXTRA_USERNAME, server.getUsername());
-		connectionIntent.putExtra(MumbleService.EXTRA_PASSWORD, server.getPassword());
+		connectionIntent.putExtra(MumbleService.EXTRA_SERVER, server);
 		startService(connectionIntent);
 	}
 
