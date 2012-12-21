@@ -13,7 +13,7 @@
     <string name="serverUsername">Username</string>
     <string name="serverPort">Port</string>
     <string name="serverHost">Address</string>
-    <string name="serverName">Label (Optional)</string>
+    <string name="serverName">Label</string>
     <string name="sendText">Send</string>
     <string name="app_name">Plumble</string>
     <string name="server_deleted">Server deleted</string>

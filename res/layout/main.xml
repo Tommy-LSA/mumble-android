@@ -5,14 +5,6 @@
 	android:layout_width="fill_parent"
 	android:layout_height="fill_parent">
 
-	<TextView
-	    android:id="@+id/android:empty"
-	    android:layout_width="fill_parent"
-	    android:layout_height="fill_parent"
-	    android:gravity="center"
-	    android:text="@string/noServers"
-	    android:textSize="24sp" />
-
 	<ListView
 		android:id="@+id/android:list"
 		android:layout_height="fill_parent"

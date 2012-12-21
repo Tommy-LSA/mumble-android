@@ -15,6 +15,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.actionbarsherlock.view.Menu;
@@ -28,6 +29,15 @@ import com.morlunk.mumbleclient.service.BaseServiceObserver;
 import com.morlunk.mumbleclient.service.MumbleService;
 
 /**
+ * Called whenever server info is changed.
+ * @author morlunk
+ *
+ */
+interface ServerInfoListener {
+	public void serverInfoUpdated();
+}
+
+/**
  * The main server list activity.
  *
  * Shows a list of servers and allows connecting to these. Also provides
@@ -36,7 +46,7 @@ import com.morlunk.mumbleclient.service.MumbleService;
  * @author pcgod
  *
  */
-public class ServerList extends ConnectedListActivity {
+public class ServerList extends ConnectedListActivity implements ServerInfoListener {
 	private class ServerAdapter extends ArrayAdapter<Server> {
 		private Context context;
 		private List<Server> servers;
@@ -117,16 +127,13 @@ public class ServerList extends ConnectedListActivity {
 			checkConnectionState();
 		}
 	}
-
-	long serverToDeleteId = -1;
-	DbAdapter dbAdapter;
-
-	private static final int ACTIVITY_ADD_SERVER = 0;
+	
 	private static final int ACTIVITY_CHANNEL_LIST = 1;
 
 	private static final String STATE_WAIT_CONNECTION = "com.morlunk.mumbleclient.ServerList.WAIT_CONNECTION";
 
 	private ServerServiceObserver mServiceObserver;
+	private ListView listView;
 	
 	@Override
 	public final boolean onCreateOptionsMenu(final Menu menu) {
@@ -152,8 +159,8 @@ public class ServerList extends ConnectedListActivity {
 	
 
 	private void addServer() {
-		final Intent i = new Intent(this, ServerInfo.class);
-		startActivityForResult(i, ACTIVITY_ADD_SERVER);
+		ServerInfo infoDialog = new ServerInfo();
+		infoDialog.show(getSupportFragmentManager(), "serverInfo");
 	}
 
 	/**
@@ -183,10 +190,12 @@ public class ServerList extends ConnectedListActivity {
 		return false;
 	}
 	
-	private void editServer(final long id) {
-		final Intent i = new Intent(this, ServerInfo.class);
-		i.putExtra("serverId", id);
-		startActivityForResult(i, ACTIVITY_ADD_SERVER);
+	private void editServer(long id) {
+		ServerInfo infoDialog = new ServerInfo();
+		Bundle args = new Bundle();
+		args.putLong("serverId", id);
+		infoDialog.setArguments(args);
+		infoDialog.show(getSupportFragmentManager(), "serverInfo");
 	}
 	
 	private void registerConnectionReceiver() {
@@ -219,7 +228,10 @@ public class ServerList extends ConnectedListActivity {
 	 * @param id
 	 */
 	protected final void connectServer(final long id) {
-		Server server = dbAdapter.fetchServer(id);
+		DbAdapter adapter = new DbAdapter(this);
+		adapter.open();
+		Server server = adapter.fetchServer(id);
+		adapter.close();
 
 		registerConnectionReceiver();
 
@@ -257,7 +269,7 @@ public class ServerList extends ConnectedListActivity {
 		
 		setContentView(R.layout.main);
 		
-		registerForContextMenu(getListView());
+		listView = (ListView) findViewById(android.R.id.list);
 
 		// Create the service observer. If such exists, onServiceBound will
 		// register it.
@@ -265,17 +277,7 @@ public class ServerList extends ConnectedListActivity {
 			mServiceObserver = new ServerServiceObserver();
 		}
 
-		dbAdapter = new DbAdapter(this);
-		dbAdapter.open();
-
 		fillList();
-	}
-
-	@Override
-	protected final void onDestroy() {
-		super.onDestroy();
-
-		dbAdapter.close();
 	}
 
 	@Override
@@ -320,6 +322,14 @@ public class ServerList extends ConnectedListActivity {
 	}
 
 	private void fillList() {
-		setListAdapter(new ServerAdapter(this, dbAdapter.fetchAllServers()));
+		DbAdapter dbAdapter = new DbAdapter(this);
+		dbAdapter.open();
+		listView.setAdapter(new ServerAdapter(this, dbAdapter.fetchAllServers()));
+		dbAdapter.close();
+	}
+
+	@Override
+	public void serverInfoUpdated() {
+		fillList();
 	}
 }
