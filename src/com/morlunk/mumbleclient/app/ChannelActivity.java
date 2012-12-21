@@ -961,7 +961,7 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 		public void onUserRemoved(final User user, String reason) throws RemoteException {
 			if(user.equals(mService.getCurrentUser())) {
 				Log.i(Globals.LOG_TAG, String.format("Kicked: \"%s\"", reason));
-				mService.setError(getString(R.string.kickedMessage, reason));
+				//mService.setError(getString(R.string.kickedMessage, reason));
 			}
 			listFragment.removeUser(user);
 		}

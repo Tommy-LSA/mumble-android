@@ -8,7 +8,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import junit.framework.Assert;
+import net.sf.mumble.MumbleProto.Reject;
 import net.sf.mumble.MumbleProto.UserState;
+import net.sf.mumble.MumbleProto.Reject.RejectType;
 import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -194,11 +196,11 @@ public class MumbleService extends Service {
 		}
 
 		@Override
-		public void setError(final String error) {
+		public void setError(final Reject reject) {
 			handler.post(new Runnable() {
 				@Override
 				public void run() {
-					errorString = error;
+					rejectResponse = reject;
 				}
 			});
 		}
@@ -358,7 +360,7 @@ public class MumbleService extends Service {
 
 
 		@Override
-		public void setError(final String error) {
+		public void setError(final Reject reject) {
 			handler.post(new ServiceProtocolMessage() {
 				@Override
 				protected void broadcast(final IServiceObserver observer) {
@@ -366,7 +368,7 @@ public class MumbleService extends Service {
 
 				@Override
 				protected void process() {
-					errorString = error;
+					rejectResponse = reject;
 				}
 			});
 		}
@@ -468,7 +470,6 @@ public class MumbleService extends Service {
 				}
 			});
 		}
-
 	}
 
 	public static final int CONNECTION_STATE_DISCONNECTED = 0;
@@ -521,7 +522,7 @@ public class MumbleService extends Service {
 	int state;
 	boolean synced;
 	int serviceState;
-	String errorString;
+	Reject rejectResponse;
 	final List<Message> messages = new LinkedList<Message>();
 	final List<Message> unreadMessages = new LinkedList<Message>();
 	final List<Channel> channels = new ArrayList<Channel>();
@@ -621,14 +622,14 @@ public class MumbleService extends Service {
 		return mProtocol.currentUser;
 	}
 	
-	public void setError(String error) {
-		errorString = error;
+	public void setError(Reject reject) {
+		rejectResponse = reject;
 	}
 
-	public String getError() {
-		final String r = errorString;
-		errorString = null;
-		return r;
+	public Reject getError() {
+		Reject error = rejectResponse;
+		rejectResponse = null; // Clear error
+		return error;
 	}
 
 	public boolean isActivityVisible() {
@@ -889,6 +890,13 @@ public class MumbleService extends Service {
 		mClientThread = mClient.start(mProtocol);
 		
 		return START_NOT_STICKY;
+	}
+	
+	/**
+	 * Reconnects to the active server.
+	 */
+	public void reconnect() {
+		doConnectionDisconnect();
 	}
 
 	void doConnectionDisconnect() {

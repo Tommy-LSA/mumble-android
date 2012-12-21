@@ -107,7 +107,7 @@ public class ServerInfo extends SherlockDialogFragment {
 
 		db.open();
 		if (server != null) {
-			db.updateServer(server.getId(), name, host, port, username, "");
+			db.updateServer(server.getId(), name, host, port, username, server.getPassword());
 		} else {
 			db.createServer(name, host, port, username, "");
 		}

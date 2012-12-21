@@ -582,7 +582,7 @@ public class MumbleConnection implements Runnable {
 			Log.w(Globals.LOG_TAG, error, e);
 			return;
 		}
-		connectionHost.setError(String.format(error));
+		//connectionHost.setError(String.format(error));
 		Log.e(Globals.LOG_TAG, error, e);
 	}
 

@@ -104,7 +104,7 @@ public class ConnectedListActivity extends SherlockFragmentActivity {
 	}
 
 	protected void onDisconnected() {
-		final String error = mService.getError();
+		final String error = mService.getError().getReason();
 		if (error != null) {
 			Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
 		}

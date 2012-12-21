@@ -1,5 +1,8 @@
 package com.morlunk.mumbleclient.service;
 
+import net.sf.mumble.MumbleProto.Reject;
+import net.sf.mumble.MumbleProto.Reject.RejectType;
+
 import com.morlunk.mumbleclient.service.model.Channel;
 import com.morlunk.mumbleclient.service.model.Message;
 import com.morlunk.mumbleclient.service.model.User;
@@ -25,7 +28,7 @@ public interface MumbleProtocolHost {
 
 	public void messageSent(Message msg);
 
-	public void setError(String error);
+	public void setError(Reject reject);
 
 	public void setSynchronized(boolean synced);
 

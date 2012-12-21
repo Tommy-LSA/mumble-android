@@ -247,15 +247,6 @@ public class ServerList extends ConnectedListActivity implements ServerInfoListe
 	}
 
 	@Override
-	protected final void onActivityResult(
-		final int requestCode,
-		final int resultCode,
-		final Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-		fillList();
-	}
-
-	@Override
 	protected final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		

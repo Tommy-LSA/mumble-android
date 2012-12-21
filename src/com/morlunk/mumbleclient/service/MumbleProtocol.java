@@ -32,7 +32,7 @@ public class MumbleProtocol {
 	public enum MessageType {
 		// TODO find out what 'Unknown' is. Without that extra enum value, servers will crash.
 		Version, UDPTunnel, Authenticate, Ping, Reject, ServerSync, ChannelRemove, ChannelState, UserRemove, UserState, BanList, TextMessage, PermissionDenied, ACL, QueryUsers, CryptSetup, ContextActionAdd, ContextAction, UserList, VoiceTarget, PermissionQuery, CodecVersion, UserStats, RequestBlob, SuggestConfig, Unknown
-	}
+	} 
 
 	public static final int UDPMESSAGETYPE_UDPVOICECELTALPHA = 0;
 	public static final int UDPMESSAGETYPE_UDPPING = 1;
@@ -143,7 +143,7 @@ public class MumbleProtocol {
 			break;
 		case Reject:
 			final Reject reject = Reject.parseFrom(buffer);
-			host.setError(reject.getReason());
+			host.setError(reject);
 			Log.e(Globals.LOG_TAG, String.format(
 				"Received Reject message: %s",
 				reject.getReason()));
