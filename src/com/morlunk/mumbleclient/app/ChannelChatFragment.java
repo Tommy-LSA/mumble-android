@@ -49,13 +49,6 @@ public class ChannelChatFragment extends SherlockFragment {
 			return false;
 		}
 	};
-
-	private final OnClickListener sendOnClickEvent = new OnClickListener() {
-		@Override
-		public void onClick(final View v) {
-			sendMessage(chatTextEdit);
-		}
-	};
 	
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
@@ -177,7 +170,7 @@ public class ChannelChatFragment extends SherlockFragment {
 	}
 
 	void updateText() {
-		chatText.beginBatchEdit();
+//		chatText.beginBatchEdit();
 		chatText.setText("");
 //		for (final String s : ServerList.client.chatList) {
 //			chatText.append(s);

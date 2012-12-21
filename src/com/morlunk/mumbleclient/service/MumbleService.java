@@ -930,6 +930,7 @@ public class MumbleService extends Service {
 
 		// Now observers shouldn't need these anymore.
 		users.clear();
+		messages.clear();
 		channels.clear();
 	}
 
