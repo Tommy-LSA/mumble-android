@@ -179,6 +179,7 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
         final ActionBar actionBar = getSupportActionBar();
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
         actionBar.setDisplayShowHomeEnabled(false);
+        actionBar.setDisplayShowTitleEnabled(false);
         
         // Set up PTT button.
         if(settings.isPushToTalk()) {

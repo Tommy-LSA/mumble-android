@@ -8,7 +8,9 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
+import android.text.method.ScrollingMovementMethod;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,16 +18,19 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import com.actionbarsherlock.app.SherlockFragment;
+import com.morlunk.mumbleclient.Globals;
 import com.morlunk.mumbleclient.R;
 import com.morlunk.mumbleclient.service.model.Message;
 
 public class ChannelChatFragment extends SherlockFragment {
 
 	private ChannelProvider channelProvider;
+	private ScrollView chatScroll;
 	private TextView chatText;
 	private EditText chatTextEdit;
 
@@ -35,22 +40,13 @@ public class ChannelChatFragment extends SherlockFragment {
 			final TextView v,
 			final int actionId,
 			final KeyEvent event) {
-			if (event != null && !event.isShiftPressed() && v != null) {
-				final View focus = v.focusSearch(View.FOCUS_RIGHT);
-				if (focus != null) {
-					focus.requestFocus();
-					return true;
-				}
-				return false;
-			}
-
 			if (actionId == EditorInfo.IME_ACTION_SEND) {
 				if (v != null) {
 					sendMessage(v);
 				}
 				return true;
 			}
-			return true;
+			return false;
 		}
 	};
 
@@ -97,11 +93,10 @@ public class ChannelChatFragment extends SherlockFragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.chat_view, container, false);
+		chatScroll = (ScrollView) view.findViewById(R.id.chatScroll);
 		chatText = (TextView) view.findViewById(R.id.chatText);
-		chatText.setMovementMethod(LinkMovementMethod.getInstance());
 		chatTextEdit = (EditText) view.findViewById(R.id.chatTextEdit);
 		chatTextEdit.setOnEditorActionListener(chatTextEditActionEvent);
-		view.findViewById(R.id.send_button).setOnClickListener(sendOnClickEvent);
 		updateText();
 		return view;
 	}
@@ -142,6 +137,21 @@ public class ChannelChatFragment extends SherlockFragment {
 		sb.append(Html.fromHtml("<br>"));
 		
 		chatText.append(sb);
+		
+		// Auto-scroll when at bottom of chat view
+		/*
+		if(chatScroll.getScrollY()+chatScroll.getHeight() == chatText.getHeight()) {
+			Log.i(Globals.LOG_TAG, "Auto-scroll");
+			chatScroll.post(new Runnable() {
+				@Override
+				public void run() {
+				*/
+					chatScroll.fullScroll(View.FOCUS_DOWN);
+				/*
+				}
+			});
+		}
+		*/
 	}
 
 	void sendMessage(final TextView v) {

@@ -1,7 +1,6 @@
 package com.morlunk.mumbleclient.service;
 
 import net.sf.mumble.MumbleProto.Reject;
-import net.sf.mumble.MumbleProto.Reject.RejectType;
 
 import com.morlunk.mumbleclient.service.model.Channel;
 import com.morlunk.mumbleclient.service.model.Message;
