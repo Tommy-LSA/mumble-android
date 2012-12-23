@@ -73,11 +73,9 @@ public class ChannelListFragment extends SherlockFragment {
 	 */
 	public void updateChannel() {
 		// We need to make sure the fragment has been attached and is shown before updating the users.
-		if(isVisible()) {
-			usersAdapter.setVisibleChannel(channelProvider.getChannel().id);
-			usersAdapter.setUsers(channelProvider.getChannelUsers());
-			usersAdapter.notifyDataSetChanged();
-		}
+		usersAdapter.setVisibleChannel(channelProvider.getChannel().id);
+		usersAdapter.setUsers(channelProvider.getChannelUsers());
+		usersAdapter.notifyDataSetChanged();
 	}
 	
 	/**

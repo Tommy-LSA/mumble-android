@@ -223,17 +223,6 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 			});
         }
         
-        if(savedInstanceState != null) {
-        	final Channel channel = (Channel) savedInstanceState.getParcelable(SAVED_STATE_VISIBLE_CHANNEL);
-
-			// Channel might be null if we for example caused screen rotation
-			// while still connecting.
-			if (channel != null) {
-				this.visibleChannel = channel;
-			}
-			
-        }
-        
         mViewPager = (ViewPager) findViewById(R.id.pager);
         
         // If view pager is present, configure phone UI.
@@ -259,6 +248,17 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
         	// Otherwise, create tablet UI.
 	        listFragment = (ChannelListFragment) getSupportFragmentManager().findFragmentById(R.id.list_fragment);
 	        chatFragment = (ChannelChatFragment) getSupportFragmentManager().findFragmentById(R.id.chat_fragment);
+        }
+        
+        if(savedInstanceState != null) {
+        	final Channel channel = (Channel) savedInstanceState.getParcelable(SAVED_STATE_VISIBLE_CHANNEL);
+
+			// Channel might be null if we for example caused screen rotation
+			// while still connecting.
+			if (channel != null) {
+				this.visibleChannel = channel;
+			}
+			
         }
 
         /*

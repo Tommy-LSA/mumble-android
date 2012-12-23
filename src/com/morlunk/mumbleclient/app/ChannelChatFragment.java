@@ -7,14 +7,10 @@ import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.format.DateUtils;
-import android.text.method.LinkMovementMethod;
-import android.text.method.ScrollingMovementMethod;
 import android.text.style.ForegroundColorSpan;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
@@ -23,7 +19,6 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import com.actionbarsherlock.app.SherlockFragment;
-import com.morlunk.mumbleclient.Globals;
 import com.morlunk.mumbleclient.R;
 import com.morlunk.mumbleclient.service.model.Message;
 
@@ -154,6 +149,13 @@ public class ChannelChatFragment extends SherlockFragment {
 		}
 		
 		AsyncTask<String, Void, Void> messageTask = new AsyncTask<String, Void, Void>() {
+			
+			@Override
+			protected void onPreExecute() {
+				super.onPreExecute();
+				v.setEnabled(false);
+			}
+			
 			@Override
 			protected Void doInBackground(String... params) {
 				channelProvider.sendChannelMessage(params[0]);
@@ -164,6 +166,7 @@ public class ChannelChatFragment extends SherlockFragment {
 			protected void onPostExecute(Void result) {
 				super.onPostExecute(result);
 				v.setText("");
+				v.setEnabled(true);
 			}
 		};
 		messageTask.execute(text);
