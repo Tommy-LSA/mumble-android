@@ -1,13 +1,15 @@
 package com.morlunk.mumbleclient.app;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
+import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 
 import com.actionbarsherlock.app.SherlockDialogFragment;
@@ -47,9 +49,12 @@ public class ServerInfo extends SherlockDialogFragment {
 	}
 	
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
+	public Dialog onCreateDialog(Bundle savedInstanceState) {
+		LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		AlertDialog.Builder alertBuilder = new AlertDialog.Builder(getActivity());
+
 		View view = inflater.inflate(R.layout.server_add, null, false);
+		alertBuilder.setView(view);
 		
 		nameEdit = (EditText) view.findViewById(R.id.serverNameEdit);
 		hostEdit = (EditText) view.findViewById(R.id.serverHostEdit);
@@ -62,31 +67,32 @@ public class ServerInfo extends SherlockDialogFragment {
 			usernameEdit.setText(server.getUsername());
 		}
 		
-		Button saveButton = (Button) view.findViewById(R.id.serverAddButton);
-		saveButton.setText(server == null ? R.string.add : R.string.save);
-		saveButton.setOnClickListener(new OnClickListener() {
+		alertBuilder.setPositiveButton(server != null ? R.string.save : R.string.add, new OnClickListener() {
+			
 			@Override
-			public void onClick(View v) {
+			public void onClick(DialogInterface dialog, int which) {
 				save();
 			}
 		});
 		
-		Button cancelButton = (Button) view.findViewById(R.id.serverCancelButton);
-		cancelButton.setOnClickListener(new OnClickListener() {
+		alertBuilder.setNegativeButton(android.R.string.cancel, new OnClickListener() {
+			
 			@Override
-			public void onClick(View v) {
+			public void onClick(DialogInterface dialog, int which) {
 				dismiss();
 			}
 		});
 		
-		return view;
-	}
-	
-	@Override
-	public Dialog onCreateDialog(Bundle savedInstanceState) {
-		Dialog dialog = super.onCreateDialog(savedInstanceState);
-		dialog.setTitle(server != null ? R.string.serverChange : R.string.serverAdd);
-		return dialog;
+		alertBuilder.setOnCancelListener(new OnCancelListener() {
+			
+			@Override
+			public void onCancel(DialogInterface dialog) {
+				dismiss();
+			}
+		});
+		
+		alertBuilder.setTitle(server != null ? R.string.serverChange : R.string.serverAdd);
+		return alertBuilder.create();
 	}
 	
 	public void save() {
