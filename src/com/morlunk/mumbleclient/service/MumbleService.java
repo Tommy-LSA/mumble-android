@@ -1012,6 +1012,9 @@ public class MumbleService extends Service {
 	}
 	
 	public void clearChatNotification() {
+		if(unreadMessages == null || mStatusNotificationBuilder == null)
+			return;
+		
 		unreadMessages.clear();
 		mStatusNotificationBuilder.setTicker(null);
 		mStatusNotificationBuilder.setStyle(null);
