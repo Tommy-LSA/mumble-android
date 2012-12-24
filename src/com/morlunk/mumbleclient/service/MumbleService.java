@@ -22,6 +22,8 @@ import android.graphics.PixelFormat;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 import android.os.RemoteException;
 import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
@@ -505,6 +507,8 @@ public class MumbleService extends Service {
 	private Notification mStatusNotification;
 	private NotificationCompat.Builder mStatusNotificationBuilder;
 	private View overlayView; // Hot corner overlay view
+	
+	private WakeLock wakeLock;
 
 	private final LocalBinder mBinder = new LocalBinder();
 	final Handler handler = new Handler();
@@ -683,6 +687,9 @@ public class MumbleService extends Service {
 		
 		settings = new Settings(this);
 		settingsListeners = new ArrayList<SettingsListener>();
+		
+		PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+		wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "plumbleLock");
 		
 		Log.i(Globals.LOG_TAG, "MumbleService: Created");
 		serviceState = CONNECTION_STATE_DISCONNECTED;
@@ -885,9 +892,12 @@ public class MumbleService extends Service {
 			getApplicationContext());
 
 		mClientThread = mClient.start(mProtocol);
+		
+		// Acquire wake lock
+		wakeLock.acquire();
 	}
 
-	void doConnectionDisconnect() {
+	private void doConnectionDisconnect() {
 		// First disable all hosts to prevent old callbacks from being processed.
 		if (mProtocolHost != null) {
 			mProtocolHost.disable();
@@ -932,6 +942,11 @@ public class MumbleService extends Service {
 		users.clear();
 		messages.clear();
 		channels.clear();
+		
+		// Stop wakelock
+		if(wakeLock.isHeld()) {
+			wakeLock.release();
+		}
 	}
 
 	void hideNotification() {

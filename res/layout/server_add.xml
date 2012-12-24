@@ -3,9 +3,7 @@
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="300dp"
 	android:layout_height="wrap_content"
-	android:paddingTop="10dp"
-	android:paddingLeft="10dp"
-	android:paddingRight="10dp"
+	android:padding="10dp"
     xmlns:tools="http://schemas.android.com/tools"
     tools:ignore="NewApi" >
 	<LinearLayout
