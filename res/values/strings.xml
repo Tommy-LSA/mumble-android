@@ -79,6 +79,8 @@
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
     <string name="retry">Retry</string>
+    <string name="messageToUser">Type message to user \'%s\'</string>
+    <string name="messageToChannel">Type message to channel here</string>
     
 
 </resources>

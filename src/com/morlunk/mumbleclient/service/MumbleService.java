@@ -617,7 +617,7 @@ public class MumbleService extends Service {
 	}
 
 	public User getCurrentUser() {
-		if(!isConnected()) 
+		if(!isConnected() && mProtocol != null) 
 			return null;
 		return mProtocol.currentUser;
 	}
@@ -726,6 +726,10 @@ public class MumbleService extends Service {
 
 	public void sendChannelTextMessage(final String message, final Channel channel) {
 		mProtocol.sendChannelTextMessage(message, channel);
+	}
+
+	public void sendUserTextMessage(String string, User chatTarget) {
+		mProtocol.sendUserTestMessage(string, chatTarget);
 	}
 
 	public void sendUdpMessage(final byte[] buffer, final int length) {

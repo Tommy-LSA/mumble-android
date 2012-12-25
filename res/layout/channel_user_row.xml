@@ -40,6 +40,12 @@
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true" >
 
+		<ImageView
+		    android:id="@+id/activeChatState"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:src="@drawable/ic_action_chat" />
+
         <ImageView
             android:id="@+id/localMuteState"
             android:layout_width="32dp"

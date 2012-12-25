@@ -26,5 +26,5 @@
 			android:imeOptions="actionSend"
             android:inputType="text"
 			android:maxLines="1"
-			android:hint="@string/chat_message"></EditText>
+			android:hint="@string/messageToChannel"></EditText>
 </LinearLayout>

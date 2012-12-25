@@ -392,6 +392,19 @@ public class MumbleProtocol {
 		host.messageSent(msg);
 	}
 
+	public void sendUserTestMessage(String message, User chatTarget) {
+		final TextMessage.Builder tmb = TextMessage.newBuilder();
+		tmb.addSession(chatTarget.session);
+		tmb.setMessage(message);
+		conn.sendTcpMessage(MessageType.TextMessage, tmb);
+
+		final Message msg = new Message();
+		msg.timestamp = System.currentTimeMillis();
+		msg.message = message;
+		msg.direction = Message.DIRECTION_SENT;
+		host.messageSent(msg);
+	}
+
 	public void stop() {
 		stopped = true;
 		stopThreads();

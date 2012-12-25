@@ -21,6 +21,7 @@ import android.widget.TextView.OnEditorActionListener;
 import com.actionbarsherlock.app.SherlockFragment;
 import com.morlunk.mumbleclient.R;
 import com.morlunk.mumbleclient.service.model.Message;
+import com.morlunk.mumbleclient.service.model.User;
 
 public class ChannelChatFragment extends SherlockFragment {
 
@@ -29,6 +30,8 @@ public class ChannelChatFragment extends SherlockFragment {
 	private TextView chatText;
 	private EditText chatTextEdit;
 
+	private User chatTarget;
+	
 	private final OnEditorActionListener chatTextEditActionEvent = new OnEditorActionListener() {
 		@Override
 		public boolean onEditorAction(
@@ -86,6 +89,7 @@ public class ChannelChatFragment extends SherlockFragment {
 		chatTextEdit = (EditText) view.findViewById(R.id.chatTextEdit);
 		chatTextEdit.setOnEditorActionListener(chatTextEditActionEvent);
 		updateText();
+		updateChatTargetText();
 		return view;
 	}
 
@@ -99,9 +103,10 @@ public class ChannelChatFragment extends SherlockFragment {
 		sb.append("] ");
 
 		if (msg.direction == Message.DIRECTION_SENT) {
+			String targetString = chatTarget == null ? msg.channel.name : chatTarget.name;
 			sb.append("To ");
-			sb.append(msg.channel.name);
-			sb.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.abs__holo_blue_light)), sb.length()-msg.channel.name.length(), sb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			sb.append(targetString);
+			sb.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.abs__holo_blue_light)), sb.length()-targetString.length(), sb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 		} else {
 			if (msg.channelIds > 0) {
 				sb.append("(C) ");
@@ -158,7 +163,11 @@ public class ChannelChatFragment extends SherlockFragment {
 			
 			@Override
 			protected Void doInBackground(String... params) {
-				channelProvider.sendChannelMessage(params[0]);
+				if(chatTarget == null) {
+					channelProvider.sendChannelMessage(params[0]);
+				} else {
+					channelProvider.sendUserMessage(params[0], chatTarget);
+				}
 				return null;
 			}
 			
@@ -190,6 +199,24 @@ public class ChannelChatFragment extends SherlockFragment {
 	public void clear() {
 		if(chatText != null) {
 			updateText();
+		}
+	}
+	
+	public void setChatTarget(User user) {
+		chatTarget = user;
+		if(chatTextEdit != null) {
+			updateChatTargetText();
+		}
+	}
+	
+	/**
+	 * Updates hint displaying chat target.
+	 */
+	public void updateChatTargetText() {		
+		if(chatTarget == null) {
+			chatTextEdit.setHint(R.string.messageToChannel);
+		} else {
+			chatTextEdit.setHint(getString(R.string.messageToUser, chatTarget.name));
 		}
 	}
 }

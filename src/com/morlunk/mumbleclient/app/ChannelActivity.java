@@ -79,7 +79,9 @@ import com.morlunk.mumbleclient.service.model.User;
 interface ChannelProvider {
 	public Channel getChannel();
 	public List<User> getChannelUsers();
+	public void setChatTarget(User chatTarget);
 	public void sendChannelMessage(String message);
+	public void sendUserMessage(String string, User chatTarget);
 }
 
 interface TokenDialogFragmentListener {
@@ -91,6 +93,7 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 
 	public static final String JOIN_CHANNEL = "join_channel";
 	public static final String SAVED_STATE_VISIBLE_CHANNEL = "visible_channel";
+	public static final String SAVED_STATE_CHAT_TARGET = "chat_target";
 	public static final Integer PROXIMITY_SCREEN_OFF_WAKE_LOCK = 32; // Undocumented feature! This will allow us to enable the phone proximity sensor.
 
     /**
@@ -115,6 +118,8 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
     
 	private Channel visibleChannel;
 	private ChannelSpinnerAdapter channelAdapter;
+	
+	private User chatTarget;
 
 	private ProgressDialog mProgressDialog;
 	private Button mTalkButton;
@@ -259,6 +264,9 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 				this.visibleChannel = channel;
 			}
 			
+			this.chatTarget = (User) savedInstanceState.getParcelable(SAVED_STATE_CHAT_TARGET);
+			listFragment.setChatTarget(chatTarget);
+			chatFragment.setChatTarget(chatTarget);
         }
 
         /*
@@ -322,6 +330,7 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
     	getSupportFragmentManager().putFragment(outState, ChannelListFragment.class.getName(), listFragment);
     	getSupportFragmentManager().putFragment(outState, ChannelChatFragment.class.getName(), chatFragment);
 		outState.putParcelable(SAVED_STATE_VISIBLE_CHANNEL, visibleChannel);
+		outState.putParcelable(SAVED_STATE_CHAT_TARGET, chatTarget);
     }
     
     /* (non-Javadoc)
@@ -880,8 +889,18 @@ public class ChannelActivity extends ConnectedActivity implements ChannelProvide
 	@Override
 	public void sendChannelMessage(String message) {
 		mService.sendChannelTextMessage(
-				message,
-				visibleChannel);
+				message, visibleChannel);
+	}
+	
+	@Override
+	public void sendUserMessage(String string, User chatTarget) {
+		mService.sendUserTextMessage(string, chatTarget);
+	}
+
+	@Override
+	public void setChatTarget(User chatTarget) {
+		this.chatTarget = chatTarget;
+		chatFragment.setChatTarget(chatTarget);
 	}
 	
 	/**
