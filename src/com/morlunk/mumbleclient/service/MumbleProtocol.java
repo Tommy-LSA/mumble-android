@@ -401,6 +401,7 @@ public class MumbleProtocol {
 		final Message msg = new Message();
 		msg.timestamp = System.currentTimeMillis();
 		msg.message = message;
+		msg.target = chatTarget;
 		msg.direction = Message.DIRECTION_SENT;
 		host.messageSent(msg);
 	}

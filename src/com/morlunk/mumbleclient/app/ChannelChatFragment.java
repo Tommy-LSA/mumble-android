@@ -12,7 +12,6 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -38,13 +37,10 @@ public class ChannelChatFragment extends SherlockFragment {
 			final TextView v,
 			final int actionId,
 			final KeyEvent event) {
-			if (actionId == EditorInfo.IME_ACTION_SEND) {
-				if (v != null) {
-					sendMessage(v);
-				}
-				return true;
+			if (v != null) {
+				sendMessage(v);
 			}
-			return false;
+			return true;
 		}
 	};
 	
@@ -103,7 +99,13 @@ public class ChannelChatFragment extends SherlockFragment {
 		sb.append("] ");
 
 		if (msg.direction == Message.DIRECTION_SENT) {
-			String targetString = chatTarget == null ? msg.channel.name : chatTarget.name;
+			String targetString;
+			if(msg.target != null)
+				targetString = msg.target.name;
+			else if(msg.channel != null)
+				targetString = msg.channel.name;
+			else
+				targetString = "Unknown";
 			sb.append("To ");
 			sb.append(targetString);
 			sb.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.abs__holo_blue_light)), sb.length()-targetString.length(), sb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -131,20 +133,13 @@ public class ChannelChatFragment extends SherlockFragment {
 		
 		chatText.append(sb);
 		
-		// Auto-scroll when at bottom of chat view
-		/*
-		if(chatScroll.getScrollY()+chatScroll.getHeight() == chatText.getHeight()) {
-			Log.i(Globals.LOG_TAG, "Auto-scroll");
-			chatScroll.post(new Runnable() {
-				@Override
-				public void run() {
-				*/
-					chatScroll.fullScroll(View.FOCUS_DOWN);
-				/*
-				}
-			});
-		}
-		*/
+		chatScroll.post(new Runnable() {
+			
+			@Override
+			public void run() {
+				chatScroll.smoothScrollTo(0, chatText.getHeight());
+			}
+		});
 	}
 
 	void sendMessage(final TextView v) {
@@ -158,7 +153,6 @@ public class ChannelChatFragment extends SherlockFragment {
 			@Override
 			protected void onPreExecute() {
 				super.onPreExecute();
-				v.setEnabled(false);
 			}
 			
 			@Override
@@ -175,7 +169,6 @@ public class ChannelChatFragment extends SherlockFragment {
 			protected void onPostExecute(Void result) {
 				super.onPostExecute(result);
 				v.setText("");
-				v.setEnabled(true);
 			}
 		};
 		messageTask.execute(text);
